@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+
+{{template "/_head.html"}}
+<title>Home</title>
+
+<body>
+    {{template "nav" .}}
+    <h1>Feeds</h1>
+    <input type="text" id="feedurl" name="feedurl" placeholder="Add a new feed" required
+        hx-post="/feeds/new" hx-target="#feeds-list" hx-swap="afterbegin"
+        class="input input-sm w-full" />
+    <ul id="feeds-list">
+        {{range .QueryRows `SELECT id, title, feed_link, data FROM feed`}}
+        {{block "feed" .}}
+        <li>{{.id}} - {{.title}} - {{.feed_link}} - {{.data}}</li>{{end}}
+        {{end}}
+    </ul>
+</body>
+
+</html>
+
+{{define "POST /feeds/new"}}
+{{- $result := .Req.PostForm.feedurl | idx 0 | parseRSS | .Exec `INSERT INTO feed(data) VALUES(?)` }}
+{{template "feed" .QueryRow `SELECT id, title, feed_link, data FROM feed WHERE id=?` $result.LastInsertId}}
+{{end}}

@@ -1,0 +1,27 @@
+{{define "schema"}}
+DROP TABLE IF EXISTS feed;
+DROP TABLE IF EXISTS item;
+
+CREATE TABLE IF NOT EXISTS feed(
+id INTEGER PRIMARY KEY,
+data TEXT CHECK (json_valid(data)),
+feed_link TEXT GENERATED ALWAYS AS (data ->> '$.feedLink'),
+title TEXT GENERATED ALWAYS AS (data ->> '$.title')
+) STRICT;
+
+CREATE TABLE IF NOT EXISTS item(
+id INTEGER PRIMARY KEY,
+feed_id INTEGER,
+guid TEXT GENERATED ALWAYS AS (data ->> '$.guid') STORED,
+data TEXT CHECK (json_valid(data)),
+feed_link TEXT GENERATED ALWAYS AS (data ->> '$.feedLink'),
+FOREIGN KEY (feed_id) REFERENCES feed(id)
+) STRICT;
+
+CREATE UNIQUE INDEX IF NOT EXISTS item_ids ON item(feed_id, guid);
+{{end}}
+
+{{define "INIT /_schema.html"}}
+{{$user_version := .QueryVal "PRAGMA user_version"}}
+{{$_ := .Exec (.Template "schema" $user_version)}}
+{{end}}

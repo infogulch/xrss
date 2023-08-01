@@ -2,11 +2,16 @@ package xrss
 
 import (
 	"encoding/json"
+	"html/template"
 
 	"github.com/mmcdole/gofeed"
 )
 
-func funcParseRSS(url string) (string, error) {
+var funcLibrary template.FuncMap = template.FuncMap{
+	"fetchRSS": funcFetchRSS,
+}
+
+func funcFetchRSS(url string) (string, error) {
 	fp := gofeed.NewParser()
 	feed, err := fp.ParseURL(url)
 	if err != nil {

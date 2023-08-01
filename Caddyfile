@@ -1,7 +1,8 @@
 {
+	debug
 }
 
-:8080
+:8081
 
 route /static/* {
 	file_server
@@ -9,9 +10,5 @@ route /static/* {
 
 route {
 	xrss {
-		database {
-			driver sqlite
-			connstr file:xrss.db?_pragma=journal_mode(WAL)&_pragma=synchronous(1)&_pragma=foreign_keys(1)&_pragma=auto_vacuum(2)
-		}
 	}
 }

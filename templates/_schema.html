@@ -1,24 +1,20 @@
 {{define "schema"}}
-DROP TABLE IF EXISTS feed;
-DROP TABLE IF EXISTS item;
-
 CREATE TABLE IF NOT EXISTS feed(
 id INTEGER PRIMARY KEY,
-data TEXT CHECK (json_valid(data)),
-feed_link TEXT GENERATED ALWAYS AS (data ->> '$.feedLink'),
-title TEXT GENERATED ALWAYS AS (data ->> '$.title')
+title TEXT,
+feed_link TEXT,
+data TEXT CHECK (json_valid(data))
 ) STRICT;
 
 CREATE TABLE IF NOT EXISTS item(
 id INTEGER PRIMARY KEY,
 feed_id INTEGER,
-guid TEXT GENERATED ALWAYS AS (data ->> '$.guid') STORED,
 data TEXT CHECK (json_valid(data)),
-feed_link TEXT GENERATED ALWAYS AS (data ->> '$.feedLink'),
+item_id TEXT GENERATED ALWAYS AS (data ->> '$.guid') STORED,
 FOREIGN KEY (feed_id) REFERENCES feed(id)
 ) STRICT;
 
-CREATE UNIQUE INDEX IF NOT EXISTS item_ids ON item(feed_id, guid);
+CREATE UNIQUE INDEX IF NOT EXISTS item_ids ON item(feed_id, item_id);
 {{end}}
 
 {{define "INIT /_schema.html"}}

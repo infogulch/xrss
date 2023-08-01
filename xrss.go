@@ -33,9 +33,7 @@ var (
 
 // CustomTemplateFunctions implements xtemplate.CustomFunctionsProvider.
 func (*XRss) CustomTemplateFunctions() template.FuncMap {
-	return template.FuncMap{
-		"parseRSS": funcParseRSS,
-	}
+	return funcLibrary
 }
 
 // Validate ensures t has a valid configuration and implements caddy.Validator.

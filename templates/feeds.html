@@ -21,6 +21,11 @@
 </html>
 
 {{define "POST /feeds/new"}}
-{{- $result := .Req.PostForm.feedurl | idx 0 | parseRSS | .Exec `INSERT INTO feed(data) VALUES(?)` }}
-{{template "feed" .QueryRow `SELECT id, title, feed_link, data FROM feed WHERE id=?` $result.LastInsertId}}
-{{end}}
+{{- $response := .Req.PostForm.feedurl | idx 0 | try .Funcs.fetchRSS }}
+{{- if $response.OK }}
+{{- $result := .Exec `INSERT INTO feed(data) VALUES(json_set(?, '$.items', '[]'))` $response.Value }}
+{{- template "feed" .QueryRow `SELECT id, title, feed_link, data FROM feed WHERE id=?` $result.LastInsertId}}
+{{- else }}
+Failed to fetch rss feed: {{$response.Error}}
+{{- end}}
+{{- end}}

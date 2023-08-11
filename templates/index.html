@@ -1,16 +1,43 @@
 <!DOCTYPE html>
-<html>
 
 {{template "/_head.html"}}
 <title>Home</title>
 
-<body>
-    {{block "nav" .}}
-    <ul>
-        <li><a href="/">Home</a></li>
-        <li><a href="/feeds">Feeds</a></li>
-    </ul>
-    {{end}}
-</body>
+{{block "header" .}}
+<h1><a href="/">XRss</a></h1>
+{{end}}
 
-</html>
+{{block "newfeed" .}}
+<input type="text" id="feedurl" name="feedurl" placeholder="Add a new feed" required
+    hx-post="/newfeed" hx-target="#feeds-list" hx-swap="afterbegin"
+    class="input input-sm w-full" value="" />
+{{end}}
+
+<ul id="feeds-list">
+    {{range .QueryRows `SELECT feed_id, title, unread_count FROM v_feeds_list`}}
+    {{block "feed" .}}
+    <li><a href="/feeds/feed/{{.feed_id}}">{{.title}} <span>{{.unread_count}}</span></a></li>
+    {{end}}
+    {{end}}
+</ul>
+
+<ul id="article-list">
+    <li>Some article</li>
+</ul>
+
+<footer>
+    {{- $stats := .QueryStats -}}
+    Performed {{$stats.Count}} queries in {{$stats.TotalDuration}} to serve this request.
+</footer>
+
+{{define "POST /newfeed"}}
+{{- $url := .Req.PostForm.feedurl | idx 0}}
+{{- $response :=  try .Funcs.fetchFeed $url}}
+{{- template "newfeed" .}}{{- if $response.OK }}
+{{- $result := .Exec `INSERT INTO ingest(fetch_result) VALUES(($1))` (toJson $response.Value) }}
+{{- template "feed" .QueryRow `SELECT id, title, feed_link, data FROM feed WHERE id=?` $result.LastInsertId}}
+
+{{- else }}
+Failed to fetch rss feed: {{$response.Error}}
+{{- end}}
+{{- end}}

@@ -2,10 +2,13 @@ module github.com/infogulch/caddy-xrss
 
 go 1.20
 
+require github.com/infogulch/caddy-xtemplate v0.0.0
+
+replace github.com/infogulch/caddy-xtemplate v0.0.0 => ../xtemplate
+
 require (
 	github.com/caddyserver/caddy/v2 v2.6.4
-	github.com/infogulch/caddy-xtemplate v0.0.0-20230728011206-f3af5b798b6c
-	golang.org/x/exp v0.0.0-20221205204356-47842c84f3db
+	github.com/mmcdole/gofeed v1.2.1
 )
 
 require (
@@ -75,7 +78,6 @@ require (
 	github.com/mitchellh/copystructure v1.2.0 // indirect
 	github.com/mitchellh/go-ps v1.0.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
-	github.com/mmcdole/gofeed v1.2.1 // indirect
 	github.com/mmcdole/goxpp v1.1.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
@@ -116,6 +118,7 @@ require (
 	go.uber.org/multierr v1.6.0 // indirect
 	go.uber.org/zap v1.24.0 // indirect
 	golang.org/x/crypto v0.5.0 // indirect
+	golang.org/x/exp v0.0.0-20221205204356-47842c84f3db // indirect
 	golang.org/x/mod v0.6.0 // indirect
 	golang.org/x/net v0.7.0 // indirect
 	golang.org/x/sys v0.5.0 // indirect

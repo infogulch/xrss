@@ -31,11 +31,11 @@ func parseCaddyfile(h httpcaddyfile.Helper) (caddyhttp.MiddlewareHandler, error)
 				for nesting := h.Nesting(); h.NextBlock(nesting); {
 					switch h.Val() {
 					case "driver":
-						if !h.Args(&rss.Database.Driver) {
+						if !h.Args(&rss.xtemplate.Database.Driver) {
 							return nil, h.ArgErr()
 						}
 					case "connstr":
-						if !h.Args(&rss.Database.Connstr) {
+						if !h.Args(&rss.xtemplate.Database.Connstr) {
 							return nil, h.ArgErr()
 						}
 					}

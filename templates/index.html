@@ -3,40 +3,65 @@
 {{template "/_head.html"}}
 <title>Home</title>
 
-{{block "header" .}}
-<h1><a href="/">XRss</a></h1>
-{{end}}
+<div class="grid grid-cols-1 gap-4 lg:grid-cols-[180px_1fr] lg:gap-8">
+  <div class="px-4 py-6">
+    <ul class="mt-6 space-y-1">
+      <li>
+        <a class="block text-center rounded-lg bg-gray-100 text-lg text-gray-600" href="/">XRss</a>
+      </li>
+      <li>
+        <a href="" class="block rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700"> General </a>
+      </li>
+      {{range .QueryRows `SELECT id, url, title FROM feed`}}
+      {{block "feed" .}}
+      <li class="overflow-hidden">
+        <a hx-post="/feeds/feed/{{.id}}/fetch" hx-swap="none"
+          class="block rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700">{{.title}}</a>
+      </li>
+      {{end}}
+      {{end}}
+    </ul>
+    <div class="sticky inset-x-0 bottom-0 border-t border-gray-100">
+      {{block "newfeed" .}}
+      <input type="text" id="feedurl" name="feedurl" placeholder="Add a new feed" required
+        hx-post="/feeds/new" hx-target="#feeds-list" hx-swap="afterbegin"
+        class="input input-sm w-full" value="" />
+      {{end}}
+    </div>
+  </div>
 
-{{block "newfeed" .}}
-<input type="text" id="feedurl" name="feedurl" placeholder="Add a new feed" required
-    hx-post="/newfeed" hx-target="#feeds-list" hx-swap="afterbegin"
-    class="input input-sm w-full" value="" />
-{{end}}
-
-<ul id="feeds-list">
-    {{range .QueryRows `SELECT feed_id, title, unread_count FROM v_feeds_list`}}
-    {{block "feed" .}}
-    <li><a href="/feeds/feed/{{.feed_id}}">{{.title}} <span>{{.unread_count}}</span></a></li>
-    {{end}}
-    {{end}}
-</ul>
-
-<ul id="article-list">
-    <li>Some article</li>
-</ul>
+  <div class="px-4 py-6">
+    <ul id="article-list">
+      {{range .QueryRows `SELECT id, feed_id, title, description, image, author,  FROM item` }}
+      <li>{{.feed_id}} - {{.id}} - {{.title}} - {{.description | stripHTML | abbrev 200}} - {{.image}}</li>
+      {{end}}
+    </ul>
+  </div>
+</div>
 
 <footer>
-    {{- $stats := .QueryStats -}}
-    Performed {{$stats.Count}} queries in {{$stats.TotalDuration}} to serve this request.
+  {{- $stats := .QueryStats -}}
+  Performed {{$stats.Count}} queries in {{$stats.TotalDuration}} to serve this request.
 </footer>
 
-{{define "POST /newfeed"}}
+{{define "POST /feeds/new"}}
 {{- $url := .Req.PostForm.feedurl | idx 0}}
-{{- $response :=  try .Funcs.fetchFeed $url}}
-{{- template "newfeed" .}}{{- if $response.OK }}
-{{- $result := .Exec `INSERT INTO ingest(fetch_result) VALUES(($1))` (toJson $response.Value) }}
-{{- template "feed" .QueryRow `SELECT id, title, feed_link, data FROM feed WHERE id=?` $result.LastInsertId}}
+{{- $feed_id := (.Exec `INSERT INTO feed(url) VALUES(($1))` $url).LastInsertId }}
+{{- template "fetch_feed" .WithVars (dict "feed_id" $feed_id) }}
+{{- template "feed" .QueryRow `SELECT id, url, title FROM feed WHERE id=?` $feed_id}}
+{{- template "newfeed" .}}
+{{- end}}
 
+{{define "POST /feeds/feed/:id/fetch"}}
+{{- template "fetch_feed" .WithVars (dict "feed_id" (.Params.ByName "id")) }}
+{{- end}}
+
+{{define "fetch_feed"}}
+{{- $feed_id := .Vars.feed_id }}
+{{- $feed := .QueryRow `SELECT feed_id, url, last_modified, etag FROM v_feed_fetch_info WHERE feed_id=$1` $feed_id}}
+{{- $response :=  try .Funcs.fetchFeed $feed.url $feed.etag ($feed.last_modified | toDate "Mon, 02 Jan 2006 15:04:05 MST")}}
+{{- if $response.OK }}
+{{- $result := .Exec `INSERT INTO ingest(feed_id, data) VALUES ($1, $2)` $feed_id (toJson $response.Value) }}
 {{- else }}
 Failed to fetch rss feed: {{$response.Error}}
 {{- end}}

@@ -25,9 +25,10 @@ var (
 func (r *XRss) Provision(ctx caddy.Context) error {
 	if r.xtemplate.Database.Driver == "" {
 		r.xtemplate.Database.Driver = "sqlite3"
-		r.xtemplate.Database.Connstr = "file:rss.db?_journal=WAL&_synchronous=NORMAL&_foreign_keys=true&_vacuum=full"
+		r.xtemplate.Database.Connstr = "file:rss.sqlite?_journal=WAL&_synchronous=NORMAL&_foreign_keys=true&_vacuum=full"
 	}
 	r.xtemplate.TemplateRoot = "templates"
+	r.xtemplate.ContextRoot = "templates"
 	r.xtemplate.ExtraFuncs = funcLibrary
 	return r.xtemplate.Provision(ctx)
 }

@@ -3,6 +3,7 @@ package xrss
 import (
 	"fmt"
 	"html/template"
+	"io"
 	"net/http"
 	"time"
 
@@ -14,13 +15,15 @@ var funcLibrary template.FuncMap = template.FuncMap{
 }
 
 type FetchResult struct {
-	ResponseStatus int
-	URL            string
-	Etag           string
-	LastModified   time.Time
-	FetchTime      time.Time
-	FetchDuration  time.Duration
-	*gofeed.Feed
+	StatusCode      int           `json:"status_code"`
+	URL             string        `json:"url"`
+	Etag            string        `json:"etag"`
+	LastModified    time.Time     `json:"last_modified"`
+	FetchedOn       time.Time     `json:"fetched_on"`
+	FetchedDuration time.Duration `json:"fetched_duration"`
+	FetchedBytes    int           `json:"fetched_bytes"`
+	FetchedCount    int           `json:"fetched_count"`
+	Feed            *gofeed.Feed  `json:"feed,omitempty"`
 }
 
 var gmtTimeZoneLocation *time.Location = must(time.LoadLocation("GMT"))
@@ -45,10 +48,10 @@ func funcFetchFeed(url string, etag string, lastModified time.Time) (FetchResult
 	resp, err := http.DefaultClient.Do(req)
 
 	result := FetchResult{
-		ResponseStatus: resp.StatusCode,
-		URL:            url,
-		FetchTime:      start,
-		FetchDuration:  time.Since(start),
+		StatusCode:      resp.StatusCode,
+		URL:             url,
+		FetchedOn:       start,
+		FetchedDuration: time.Since(start),
 	}
 
 	if err != nil {
@@ -75,10 +78,13 @@ func funcFetchFeed(url string, etag string, lastModified time.Time) (FetchResult
 	parser := gofeed.NewParser()
 	// maybe expose .AuthConfig or .Client
 
-	result.Feed, err = parser.Parse(resp.Body)
+	counter := &CountingReader{reader: resp.Body}
+	result.Feed, err = parser.Parse(counter)
 	if err != nil {
 		return result, err
 	}
+	result.FetchedBytes = counter.BytesRead
+	result.FetchedCount = len(result.Feed.Items)
 
 	if eTag := resp.Header.Get("Etag"); eTag != "" {
 		result.Etag = eTag
@@ -99,4 +105,15 @@ func must[T any](t T, err error) T {
 		panic(err)
 	}
 	return t
+}
+
+type CountingReader struct {
+	reader    io.Reader
+	BytesRead int
+}
+
+func (r *CountingReader) Read(p []byte) (n int, err error) {
+	n, err = r.reader.Read(p)
+	r.BytesRead += n
+	return n, err
 }

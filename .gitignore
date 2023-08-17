@@ -1,2 +1,4 @@
 caddy*
 *.db*
+*.sqlite*
+.vscode

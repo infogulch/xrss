@@ -23,13 +23,20 @@ CREATE VIEW v_feed_fetch_info AS
   SELECT
     feed.id AS feed_id,
     url,
-    data ->> "$.last_modified" AS last_modified,
-    data ->> "$.etag" AS etag
+    last_modified,
+    etag
   FROM
     feed
-    LEFT JOIN fetch ON fetch.feed_id = feed.id
-  GROUP BY feed.id
-  HAVING fetch.id = MAX(fetch.id);
+    LEFT JOIN (
+      SELECT
+        feed_id,
+        data ->> "$.last_modified" AS last_modified,
+        data ->> "$.etag" AS etag
+      FROM fetch
+      GROUP BY feed_id
+      HAVING id = MAX(id)
+    ) AS latest_fetch
+      ON feed_id = feed.id;
 
 CREATE TABLE IF NOT EXISTS item (
   id INTEGER PRIMARY KEY,

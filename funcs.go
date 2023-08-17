@@ -28,7 +28,7 @@ type FetchResult struct {
 
 var gmtTimeZoneLocation *time.Location = must(time.LoadLocation("GMT"))
 
-func funcFetchFeed(url string, etag string, lastModified time.Time) (FetchResult, error) {
+func funcFetchFeed(url string, etag string, lastModified string) (FetchResult, error) {
 	start := time.Now().In(gmtTimeZoneLocation)
 
 	req, err := http.NewRequest(http.MethodGet, url, nil)
@@ -41,8 +41,8 @@ func funcFetchFeed(url string, etag string, lastModified time.Time) (FetchResult
 		req.Header.Set("If-None-Match", fmt.Sprintf(`"%s"`, etag))
 	}
 
-	if !lastModified.IsZero() {
-		req.Header.Set("If-Modified-Since", lastModified.In(gmtTimeZoneLocation).Format(time.RFC1123))
+	if lastModified != "" {
+		req.Header.Set("If-Modified-Since", lastModified)
 	}
 
 	resp, err := http.DefaultClient.Do(req)

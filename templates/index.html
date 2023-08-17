@@ -31,15 +31,20 @@
     <ul id="article-list">
       {{range .QueryRows `SELECT id, feed_id, title, description, image, authors ->> '$[0].name' AS author, published FROM item` }}
       <li class="odd:bg-gray-100 flex-nowrap flex flex-row items-center flow-root p-1 overflow-hidden">
+        <div class-="flex-none bg-[url('{{.image}}')] w-5 h-4 rounded"></div>
         <div class="flex-1">
           <div class="flex flex-row items-baseline">
-            <div class="flex-initial pr-1 text-lg truncate">{{.title | stripHTML | trustHtml}}</div>·
-            <div class="flex-none pl-1 pr-1 text-sm text-gray-700">{{.author}}</div>·
-            <div class="flex-none pl-1 text-sm text-gray-700">
+            <div class="flex-initial pr-1 text-lg font-semibold truncate">{{.title | stripHTML | trustHtml}}</div>·
+            <div class="flex-none pl-1 pr-1 text-sm text-gray-800">{{.author}}</div>·
+            <div class="group relative flex-none pl-1 text-sm text-gray-800">
               <time datetime="{{.published}}">{{.published | humanize "time:2006-01-02T15:04:05Z07:00"}}</time>
+              <span
+                class="group-hover:visible left-1/2 top-full mr-[-999px] -translate-x-3/4 group-hover:z-50 absolute invisible p-1 top-full text-gray-200 bg-gray-800 rounded shadow-lg">
+                {{- .published | toDate "2006-01-02T15:04:05Z07:00" | date "Mon, 02 Jan 2006 15:04:05 MST" -}}
+              </span>
             </div>
           </div>
-          <div class="line-clamp-2">{{.description | stripHTML | abbrev 2000 | trustHtml}}</div>
+          <div class="line-clamp-2 text-gray-500">{{.description | stripHTML | abbrev 2000 | trustHtml}}</div>
         </div>
       </li>
       {{end}}
@@ -49,7 +54,7 @@
 
 <footer>
   {{- $stats := .QueryStats -}}
-  Performed {{$stats.Count}} queries in {{$stats.TotalDuration}} to serve this request.
+  Performed {{$stats.Count}} queries in {{$stats.TotalDuration.Round }} to serve this request.
 </footer>
 
 {{define "POST /feeds/new"}}

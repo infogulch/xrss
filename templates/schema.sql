@@ -10,13 +10,22 @@ CREATE TABLE IF NOT EXISTS fetch (
   feed_id INTEGER NOT NULL,
   added_count INTEGER NOT NULL,
   data TEXT CHECK (JSON_VALID(data)),
-  fetched_on TEXT GENERATED ALWAYS AS (data ->> '$.fetched_on'),
-  fetched_duration TEXT GENERATED ALWAYS AS (data ->> '$.fetched_duration'),
-  fetched_bytes INTEGER GENERATED ALWAYS AS (data ->> '$.fetched_bytes'),
-  fetched_count INTEGER GENERATED ALWAYS AS (data ->> '$.fetched_count'),
   FOREIGN KEY (feed_id) REFERENCES feed (id)
 )
 STRICT;
+
+DROP VIEW IF EXISTS v_fetch;
+CREATE VIEW v_fetch AS
+  SELECT
+    id,
+    feed_id,
+    data,
+    added_count,
+    data ->> '$.fetched_on' AS fetched_on,
+    data ->> '$.fetched_duration' AS fetched_duration,
+    data ->> '$.fetched_bytes' AS fetched_bytes,
+    data ->> '$.fetched_count' AS fetched_count
+  FROM fetch;
 
 DROP VIEW IF EXISTS v_feed_fetch_info;
 CREATE VIEW v_feed_fetch_info AS
@@ -44,18 +53,30 @@ CREATE TABLE IF NOT EXISTS item (
   fetch_id INTEGER,
   data TEXT CHECK (JSON_VALID(data)),
   guid TEXT GENERATED ALWAYS AS (data ->> '$.guid') STORED,
-  title TEXT GENERATED ALWAYS AS (data ->> '$.title'),
-  description TEXT GENERATED ALWAYS AS (data ->> '$.description'),
   published TEXT GENERATED ALWAYS AS (data ->> '$.publishedParsed'),
-  link TEXT GENERATED ALWAYS AS (data ->> '$.link'),
-  image TEXT GENERATED ALWAYS AS (data ->> '$.image'),
-  authors TEXT GENERATED ALWAYS AS (data ->> '$.authors'),
   FOREIGN KEY (feed_id) REFERENCES feed (id),
   FOREIGN KEY (fetch_id) REFERENCES fetch (id)
 )
 STRICT;
 
 CREATE UNIQUE INDEX IF NOT EXISTS item_ids ON item (feed_id, guid, fetch_id);
+
+DROP VIEW IF EXISTS v_item;
+CREATE VIEW v_item AS
+  SELECT
+    id,
+    feed_id,
+    fetch_id,
+    data,
+    guid,
+    data ->> '$.title' AS title,
+    data ->> '$.description' AS description,
+    data ->> '$.publishedParsed' AS published,
+    data ->> '$.link' AS link,
+    data ->> '$.image' AS image,
+    data ->> '$.authors' AS authors,
+    data ->> '$.authors[0].name' AS author
+  FROM item;
 
 CREATE TABLE IF NOT EXISTS user (
   id INTEGER PRIMARY KEY,
@@ -85,7 +106,6 @@ CREATE TABLE IF NOT EXISTS seen (
 STRICT;
 
 DROP VIEW IF EXISTS v_unseen;
-
 CREATE VIEW v_unseen AS
   SELECT
     subscription.user_id,
@@ -102,7 +122,6 @@ CREATE VIEW v_unseen AS
   FROM seen;
 
 DROP VIEW IF EXISTS v_unseen_counts;
-
 CREATE VIEW v_unseen_counts AS
   SELECT
     user_id,
@@ -112,7 +131,6 @@ CREATE VIEW v_unseen_counts AS
   GROUP BY user_id, feed_id;
 
 DROP VIEW IF EXISTS v_feeds_list;
-
 CREATE VIEW v_feeds_list AS
   SELECT
     user_id,
@@ -124,7 +142,6 @@ CREATE VIEW v_feeds_list AS
     JOIN feed ON feed.id = feed_id;
 
 DROP VIEW IF EXISTS ingest;
-
 CREATE VIEW ingest AS
   SELECT
     fetch.id AS fetch_id,

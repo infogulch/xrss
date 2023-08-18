@@ -67,15 +67,27 @@ CREATE VIEW v_item AS
     id,
     feed_id,
     fetch_id,
-    data,
     guid,
     data ->> '$.title' AS title,
     data ->> '$.description' AS description,
     data ->> '$.publishedParsed' AS published,
     data ->> '$.link' AS link,
-    data ->> '$.image' AS image,
+    COALESCE(data ->> '$.image', (
+      SELECT value ->> '$.attrs.url'
+      FROM json_each(data -> '$.extensions.media.content')
+      WHERE value ->> '$.attrs.medium' LIKE 'image' OR  value ->> '$.attrs.type' LIKE 'image/%'
+      GROUP BY 1
+      HAVING key = MIN(key)
+    ), (
+        SELECT value ->> '$.url'
+        FROM json_each(data -> '$.enclosures')
+        WHERE value ->> '$.type' LIKE 'image/%'
+        GROUP BY 1
+        HAVING key = MIN(key)
+    )) AS image,
     data ->> '$.authors' AS authors,
-    data ->> '$.authors[0].name' AS author
+    data ->> '$.authors[0].name' AS author,
+    data
   FROM item;
 
 CREATE TABLE IF NOT EXISTS user (

@@ -17,3 +17,5 @@ https://nene.github.io/prettier-sql-playground/
 https://github.com/cornelk/goscrape
 
 https://github.com/robfig/cron
+
+Small view should use: https://play.tailwindcss.com/bQJZaR1c6O + https://tailwindcss.com/docs/hover-focus-and-other-states#focus-within

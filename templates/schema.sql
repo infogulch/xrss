@@ -1,9 +1,27 @@
 CREATE TABLE IF NOT EXISTS feed (
   id INTEGER PRIMARY KEY,
-  url TEXT,
-  title TEXT
+  url TEXT
 )
 STRICT;
+
+DROP VIEW IF EXISTS v_feed;
+CREATE VIEW v_feed AS
+  SELECT
+    feed.id,
+    url,
+    latest_fetch.title,
+    image,
+    link,
+    data
+  FROM
+    feed
+    LEFT JOIN (
+      SELECT *
+      FROM v_fetch
+      GROUP BY feed_id
+      HAVING id = MAX(id)
+    ) AS latest_fetch
+      ON feed_id = feed.id;
 
 CREATE TABLE IF NOT EXISTS fetch (
   id INTEGER PRIMARY KEY,
@@ -24,7 +42,12 @@ CREATE VIEW v_fetch AS
     data ->> '$.fetched_on' AS fetched_on,
     data ->> '$.fetched_duration' AS fetched_duration,
     data ->> '$.fetched_bytes' AS fetched_bytes,
-    data ->> '$.fetched_count' AS fetched_count
+    data ->> '$.fetched_count' AS fetched_count,
+    data ->> '$.feed.image.url' AS image,
+    data ->> '$.feed.link' AS link,
+    data ->> '$.feed.title' AS title,
+    data ->> "$.last_modified" AS last_modified,
+    data ->> "$.etag" AS etag
   FROM fetch;
 
 DROP VIEW IF EXISTS v_feed_fetch_info;
@@ -37,11 +60,8 @@ CREATE VIEW v_feed_fetch_info AS
   FROM
     feed
     LEFT JOIN (
-      SELECT
-        feed_id,
-        data ->> "$.last_modified" AS last_modified,
-        data ->> "$.etag" AS etag
-      FROM fetch
+      SELECT feed_id, last_modified, etag
+      FROM v_fetch
       GROUP BY feed_id
       HAVING id = MAX(id)
     ) AS latest_fetch
@@ -53,7 +73,7 @@ CREATE TABLE IF NOT EXISTS item (
   fetch_id INTEGER,
   data TEXT CHECK (JSON_VALID(data)),
   guid TEXT GENERATED ALWAYS AS (data ->> '$.guid') STORED,
-  published TEXT GENERATED ALWAYS AS (data ->> '$.publishedParsed'),
+  published TEXT GENERATED ALWAYS AS (data ->> '$.publishedParsed') STORED,
   FOREIGN KEY (feed_id) REFERENCES feed (id),
   FOREIGN KEY (fetch_id) REFERENCES fetch (id)
 )
@@ -64,7 +84,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS item_ids ON item (feed_id, guid, fetch_id);
 DROP VIEW IF EXISTS v_item;
 CREATE VIEW v_item AS
   SELECT
-    id,
+    item.id,
     feed_id,
     fetch_id,
     guid,
@@ -87,8 +107,14 @@ CREATE VIEW v_item AS
     )) AS image,
     data ->> '$.authors' AS authors,
     data ->> '$.authors[0].name' AS author,
+    feed.title as feed_title,
     data
-  FROM item;
+  FROM
+    item
+    LEFT JOIN (
+      SELECT id, title
+      FROM v_feed
+    ) AS feed ON item.feed_id = feed.id;
 
 CREATE TABLE IF NOT EXISTS user (
   id INTEGER PRIMARY KEY,

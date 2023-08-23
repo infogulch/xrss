@@ -2,3 +2,4 @@ caddy*
 *.db*
 *.sqlite*
 .vscode
+node_modules

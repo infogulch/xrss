@@ -11,7 +11,7 @@
         <span class="p-3 text-lg text-center text-gray-600 bg-gray-100 rounded-lg">XRss</span>
         <span
           class="md:hidden right-0 h-full p-3 ml-auto text-lg text-gray-600 bg-gray-100 rounded-lg"
-          onclick="document.getElementsByTagName('main')[0].classList.toggle('show-items');">⇌</span>
+          onclick="document.getElementsByTagName('main')[0].classList.toggle('show-items');">&nbsp;⇌&nbsp;</span>
       </div>
       <ul id="feeds-list" class="space-y-1">
         <li class="overflow-hidden">
@@ -21,7 +21,7 @@
         {{range .QueryRows `SELECT id, url, title, image FROM v_feed`}}
         {{block "feed" .}}
         <li class="overflow-hidden">
-          <a hx-get="/feeds/{{.id}}/" hx-target="#items_panel" hx-swap="outerHTML" hx-push-url="true"
+          <a hx-get="/feeds/{{.id}}/" hx-target="#items-panel" hx-swap="outerHTML" hx-push-url="true"
             href="/feed/{{.id}}/"
             class="block px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg">{{.title}}</a>
         </li>
@@ -45,13 +45,13 @@
 
     <div class="shrink-0 md:w-64 w-full h-full"></div>
 
-    {{- block "items_panel" .}}
+    {{- block "items-panel" .}}
     {{- $feed_id := int (.Params.ByName "feed_id") }}
-    <div id="items_panel" class="md:flex-1 shrink-0 md:w-auto w-full h-full min-w-0">
+    <div id="items-panel" class="md:flex-1 shrink-0 md:w-auto w-full h-full min-w-0" hx-sync="this:queue all">
       <div class="fixed z-10 flex w-full gap-2 p-2 pb-2 mb-6 bg-white">
         <span
-          class="md:hidden h-full p-3 text-lg text-gray-600 bg-gray-100 rounded-lg"
-          onclick="document.getElementsByTagName('main')[0].classList.toggle('show-items')">⇌</span>
+          class="md:hidden h-full p-3 text-lg text-gray-600 bg-gray-100 rounded-lg scale-x-[-1]"
+          onclick="document.getElementsByTagName('main')[0].classList.toggle('show-items')">&nbsp;⇌&nbsp;</span>
         <span
           class="p-3 text-lg text-center text-gray-600 bg-gray-100 rounded-lg">
           {{.QueryVal `SELECT COALESCE((SELECT title FROM v_feed WHERE id=$1), 'All Feeds')` $feed_id}}</span>
@@ -98,7 +98,7 @@
 
 {{- define "GET /feeds/:feed_id/"}}
 {{- if (.Req.Header.Get "HX-Request")}}
-{{- template "items_panel" .}}
+{{- template "items-panel" .}}
 {{- else}}
 {{- template "/index.html" .}}
 {{- end}}

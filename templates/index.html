@@ -61,7 +61,7 @@
         {{- $feed_id := int (.Params.ByName "feed_id") }}
         {{- $offset := int (.Req.URL.Query.Get "offset") }}
         {{- $count := .QueryVal `SELECT COUNT(*) FROM v_item WHERE feed_id=$1 OR $1=0` $feed_id}}
-        {{- range .QueryRows `SELECT id, feed_title, title, description, image, author, published FROM v_item WHERE feed_id=$1 OR $1=0 ORDER BY published LIMIT 10 OFFSET $1` $feed_id $offset }}
+        {{- range .QueryRows `SELECT id, feed_title, title, description, image, author, published FROM v_item WHERE feed_id=$1 OR $1=0 ORDER BY published DESC LIMIT 10 OFFSET $1` $feed_id $offset }}
         <li class="odd:bg-gray-100 h-[6em] flex flex-row gap-2 p-2">
           <div class="flex-none w-[5em] bg-cover rounded" style="background-image: url('{{.image}}');"></div>
           <div class="flow-root overflow-hidden">

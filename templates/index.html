@@ -5,23 +5,24 @@
 
 <main class="group relative w-full h-full overflow-hidden bg-white">
   <div
-    class="flex transition h-full w-full group-[.show-items]:-translate-x-full md:group-[.show-items]:transform-none">
+    class="flex transition duration-500 h-full w-full group-[.show-items]:-translate-x-full md:group-[.show-items]:transform-none">
     <div class="shrink-0 md:w-64 fixed flex flex-col w-full h-full p-2">
       <div class="flex mb-6">
-        <a class="p-3 text-lg text-center text-gray-600 bg-gray-100 rounded-lg" href="/">XRss</a>
+        <span class="p-3 text-lg text-center text-gray-600 bg-gray-100 rounded-lg">XRss</span>
         <span
-          class="md:hidden right-0 w-10 h-10 h-full p-3 ml-auto text-lg leading-none text-gray-600 bg-gray-100 rounded-lg"
+          class="md:hidden right-0 h-full p-3 ml-auto text-lg text-gray-600 bg-gray-100 rounded-lg"
           onclick="document.getElementsByTagName('main')[0].classList.toggle('show-items');">⇌</span>
       </div>
       <ul id="feeds-list" class="space-y-1">
         <li class="overflow-hidden">
-          <a hx-get="/" hx-swap="none"
+          <a hx-get="/" hx-target="body" href="/" hx-push-url="true"
             class="block px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg">All Feeds</a>
         </li>
         {{range .QueryRows `SELECT id, url, title, image FROM v_feed`}}
         {{block "feed" .}}
         <li class="overflow-hidden">
-          <a hx-post="/feeds/feed/{{.id}}/fetch" hx-swap="none"
+          <a hx-get="/feeds/{{.id}}/" hx-target="#items_panel" hx-swap="outerHTML" hx-push-url="true"
+            href="/feed/{{.id}}/"
             class="block px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg">{{.title}}</a>
         </li>
         {{end}}
@@ -30,7 +31,7 @@
       <div class="inset-x-0 bottom-0 mt-auto">
         {{block "newfeed" .}}
         <input type="text" id="feedurl" name="feedurl" placeholder="Add a new feed" required
-          hx-post="/feeds/new" hx-target="#feeds-list" hx-swap="afterbegin"
+          hx-post="/feeds" hx-target="#feeds-list" hx-swap="afterbegin"
           class="input input-sm w-full" value="" />
         {{end}}
       </div>
@@ -44,27 +45,34 @@
 
     <div class="shrink-0 md:w-64 w-full h-full"></div>
 
-    <div class="md:flex-1 shrink-0 md:w-auto w-full h-full min-w-0">
-      <div class="fixed z-10 flex w-full p-2 pb-2 mb-6 bg-white">
+    {{- block "items_panel" .}}
+    {{- $feed_id := int (.Params.ByName "feed_id") }}
+    <div id="items_panel" class="md:flex-1 shrink-0 md:w-auto w-full h-full min-w-0">
+      <div class="fixed z-10 flex w-full gap-2 p-2 pb-2 mb-6 bg-white">
         <span
-          class="md:hidden w-10 h-10 p-3 text-lg leading-none text-gray-600 bg-gray-100 rounded-lg"
+          class="md:hidden h-full p-3 text-lg text-gray-600 bg-gray-100 rounded-lg"
           onclick="document.getElementsByTagName('main')[0].classList.toggle('show-items')">⇌</span>
-        <a class="p-3 text-lg text-center text-gray-600 bg-gray-100 rounded-lg" href="/">All Feeds</a>
+        <span
+          class="p-3 text-lg text-center text-gray-600 bg-gray-100 rounded-lg">
+          {{.QueryVal `SELECT COALESCE((SELECT title FROM v_feed WHERE id=$1), 'All Feeds')` $feed_id}}</span>
       </div>
-      <ul id="article-list" class="p-2 mt-16">
-        {{- block "feed_items" .}}
+      <ul id="items" class="p-2 mt-16">
+        {{- block "items" .}}
+        {{- $feed_id := int (.Params.ByName "feed_id") }}
         {{- $offset := int (.Req.URL.Query.Get "offset") }}
-        {{- range .QueryRows `SELECT id, feed_title, title, description, image, author, published FROM v_item LIMIT 10 OFFSET $1` $offset }}
+        {{- $count := .QueryVal `SELECT COUNT(*) FROM v_item WHERE feed_id=$1 OR $1=0` $feed_id}}
+        {{- range .QueryRows `SELECT id, feed_title, title, description, image, author, published FROM v_item WHERE feed_id=$1 OR $1=0 ORDER BY published LIMIT 10 OFFSET $1` $feed_id $offset }}
         <li class="odd:bg-gray-100 h-[6em] flex flex-row gap-2 p-2">
           <div class="flex-none w-[5em] bg-cover rounded" style="background-image: url('{{.image}}');"></div>
           <div class="flow-root overflow-hidden">
             <div class="flex flex-row items-baseline">
               <div class="flex-initial pr-1 text-lg font-semibold truncate">{{.title | stripHTML | trustHtml}}</div>·
+              <div class="flex-none pl-1 pr-1 text-sm text-gray-800">{{.feed_title}}</div>·
               <div class="flex-none pl-1 pr-1 text-sm text-gray-800">{{.author}}</div>·
               <div class="group/tip relative flex-none pl-1 text-sm text-gray-800">
                 <time datetime="{{.published}}">{{.published | humanize "time:2006-01-02T15:04:05Z07:00"}}</time>
                 <span
-                  class="group-hover/tip:visible left-full top-full mr-[-999px] -translate-x-full group-hover:z-50 absolute invisible p-1 top-full text-gray-200 bg-gray-800 rounded shadow-lg">
+                  class="group-hover/tip:visible left-full top-full mr-[-999px] -translate-x-full absolute invisible p-1 text-gray-200 bg-gray-800 rounded shadow-lg">
                   {{- .published | toDate "2006-01-02T15:04:05Z07:00" | date "Monday, 02 Jan 2006 15:04:05 MST" -}}
                 </span>
               </div>
@@ -73,27 +81,43 @@
           </div>
         </li>
         {{- end}}
+        {{- if lt $offset $count}}
         <li hx-trigger="revealed" hx-swap="outerHTML" hx-get="items?offset={{ add $offset 10 }}">(loading...)</li>
+        {{- end}}
         {{- end}}
       </ul>
     </div>
+    {{- end}}
   </div>
 </main>
 
 {{- define "GET /items"}}
-{{- template "feed_items" .}}
+{{- template "items" .}}
 {{- template "perf" .}}
 {{- end}}
 
-{{- define "POST /feeds/new"}}
+{{- define "GET /feeds/:feed_id/"}}
+{{- if (.Req.Header.Get "HX-Request")}}
+{{- template "items_panel" .}}
+{{- else}}
+{{- template "/index.html" .}}
+{{- end}}
+{{- end}}
+
+{{- define "GET /feeds/:feed_id/items"}}
+{{- template "items" .}}
+{{- template "perf" .}}
+{{- end}}
+
+{{- define "POST /feeds"}}
 {{- $url := .Req.PostForm.feedurl | idx 0}}
 {{- $feed_id := (.Exec `INSERT INTO feed(url) VALUES(($1))` $url).LastInsertId }}
 {{- template "fetch_feed" .WithVars (dict "feed_id" $feed_id) }}
 {{- template "feed" .QueryRow `SELECT id, url, title FROM feed WHERE id=?` $feed_id}}
 {{- end}}
 
-{{- define "POST /feeds/feed/:id/fetch"}}
-{{- template "fetch_feed" .WithVars (dict "feed_id" (.Params.ByName "id")) }}
+{{- define "POST /feeds/:feed_id/fetch"}}
+{{- template "fetch_feed" .WithVars (dict "feed_id" (.Params.ByName "feed_id")) }}
 {{- end}}
 
 {{- define "fetch_feed"}}

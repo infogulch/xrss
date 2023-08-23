@@ -19,3 +19,5 @@ https://github.com/cornelk/goscrape
 https://github.com/robfig/cron
 
 Small view should use: https://play.tailwindcss.com/bQJZaR1c6O + https://tailwindcss.com/docs/hover-focus-and-other-states#focus-within
+
+7 Restful Routes: https://gist.github.com/alexpchin/09939db6f81d654af06b

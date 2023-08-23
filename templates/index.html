@@ -31,7 +31,7 @@
       <div class="inset-x-0 bottom-0 mt-auto">
         {{block "newfeed" .}}
         <input type="text" id="feedurl" name="feedurl" placeholder="Add a new feed" required
-          hx-post="/feeds" hx-target="#feeds-list" hx-swap="afterbegin"
+          hx-post="/feeds" hx-target="#feeds-list" hx-swap="beforeend"
           class="input input-sm w-full" value="" />
         {{end}}
       </div>

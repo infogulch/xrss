@@ -4,8 +4,9 @@
 <title>Home</title>
 
 <main class="group relative w-full h-full overflow-hidden bg-white">
-  <div class="flex transition h-full w-full group-[.show-items]:-translate-x-full md:group-[.show-items]:translate-x-0">
-    <div class="shrink-0 md:w-64 fixed w-full h-full p-2">
+  <div
+    class="flex transition h-full w-full group-[.show-items]:-translate-x-full md:group-[.show-items]:transform-none">
+    <div class="shrink-0 md:w-64 fixed flex flex-col w-full h-full p-2">
       <div class="flex mb-6">
         <a class="p-3 text-lg text-center text-gray-600 bg-gray-100 rounded-lg" href="/">XRss</a>
         <span
@@ -13,6 +14,10 @@
           onclick="document.getElementsByTagName('main')[0].classList.toggle('show-items');">⇌</span>
       </div>
       <ul id="feeds-list" class="space-y-1">
+        <li class="overflow-hidden">
+          <a hx-get="/" hx-swap="none"
+            class="block px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg">All Feeds</a>
+        </li>
         {{range .QueryRows `SELECT id, url, title, image FROM v_feed`}}
         {{block "feed" .}}
         <li class="overflow-hidden">
@@ -22,7 +27,7 @@
         {{end}}
         {{end}}
       </ul>
-      <div class="inset-x-0 bottom-0">
+      <div class="inset-x-0 bottom-0 mt-auto">
         {{block "newfeed" .}}
         <input type="text" id="feedurl" name="feedurl" placeholder="Add a new feed" required
           hx-post="/feeds/new" hx-target="#feeds-list" hx-swap="afterbegin"
@@ -32,7 +37,7 @@
       {{block "perf" .}}
       <div id="perf" class="inset-x-0 bottom-0" hx-swap-oob="true">
         {{- $stats := .QueryStats -}}
-        Performed {{$stats.Count}} queries in {{$stats.TotalDuration.Round 10000}}.
+        Performed {{$stats.Count}} {{$stats.Count | plural "query" "queries"}} in {{$stats.TotalDuration.Round 10000}}.
       </div>
       {{end}}
     </div>
@@ -44,7 +49,7 @@
         <span
           class="md:hidden w-10 h-10 p-3 text-lg leading-none text-gray-600 bg-gray-100 rounded-lg"
           onclick="document.getElementsByTagName('main')[0].classList.toggle('show-items')">⇌</span>
-        <a class="p-3 text-lg text-center text-gray-600 bg-gray-100 rounded-lg" href="/">Category</a>
+        <a class="p-3 text-lg text-center text-gray-600 bg-gray-100 rounded-lg" href="/">All Feeds</a>
       </div>
       <ul id="article-list" class="p-2 mt-16">
         {{- block "feed_items" .}}

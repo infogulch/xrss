@@ -1,3 +1,28 @@
+# About
+
+This is a web-based rss reader built on top of
+[caddy-xtemplate](https://github.com/infogulch/caddy-xtemplate), a php-like
+hypertext preprocessor with Go html/template syntax, integrated into Caddy a
+world-class web server.
+
+Notable Features
+
+* UI built with tailwindcss.js
+* Adaptive UI suitable for small screens
+* Add feeds
+* Show items from all feeds or just selected feed (sometimes)
+* Uses [gofeed](github.com/mmcdole/gofeed) feed reader library
+
+Future
+
+* Maybe eventually update feeds
+* Read status, filter by read status
+* Sort options
+* Scrape item links; display full article content inline
+* Multiple users
+
+![screenshot](screenshot.png)
+
 ## Developing
 
 ```

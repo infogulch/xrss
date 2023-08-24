@@ -21,7 +21,7 @@
         {{range .QueryRows `SELECT id, url, title, image FROM v_feed`}}
         {{block "feed" .}}
         <li class="overflow-hidden">
-          <a hx-get="/feeds/{{.id}}/" hx-target="#items-panel" hx-swap="outerHTML" hx-push-url="true"
+          <a hx-get="/feeds/{{.id}}/" hx-target="#items-panel" hx-swap="outerHTML scroll:top" hx-push-url="true"
             href="/feed/{{.id}}/"
             class="block px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg">{{.title}}</a>
         </li>

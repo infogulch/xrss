@@ -3,3 +3,5 @@ caddy*
 *.sqlite*
 .vscode
 node_modules
+.env
+users.json

@@ -1,14 +1,45 @@
 {
 	debug
+
+	security {
+		local identity store localdb {
+			realm local
+			path ./users.json
+		}
+
+		authentication portal myportal {
+			enable identity store localdb
+
+			ui {
+				links {
+					"XRss" "http://127.0.0.1:8081/" icon "las la-user"
+					"My Identity" "http://127.0.0.1:8080/whoami" icon "las la-user"
+				}
+			}
+		}
+
+		authorization policy admins_policy {
+			set auth url http://127.0.0.1:8080/
+			allow roles authp/admin
+		}
+	}
 }
 
-:8081
-
-route /static/* {
-	file_server
+:8080 {
+	route /* {
+		authenticate with myportal
+	}
 }
 
-route /* {
-	xrss {
+:8081 {
+	route /static/* {
+		file_server
+	}
+
+	route /* {
+		authorize with admins_policy
+
+		xrss {
+		}
 	}
 }

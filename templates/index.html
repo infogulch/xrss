@@ -18,29 +18,31 @@
           <a hx-get="/" hx-target="body" href="/" hx-push-url="true"
             class="block px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg">All Feeds</a>
         </li>
-        {{range .QueryRows `SELECT id, url, title, image FROM v_feed`}}
-        {{block "feed" .}}
+        {{- range .QueryRows `SELECT id, url, title, image FROM v_feed`}}
+        {{- block "feed" .}}
         <li class="overflow-hidden">
           <a hx-get="/feeds/{{.id}}/" hx-target="#items-panel" hx-swap="outerHTML scroll:top" hx-push-url="true"
             href="/feed/{{.id}}/"
             class="block px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg">{{.title}}</a>
         </li>
-        {{end}}
-        {{end}}
+        {{- end}}
+        {{- end}}
       </ul>
       <div class="inset-x-0 bottom-0 mt-auto">
-        {{block "newfeed" .}}
+        {{- block "newfeed" .}}
+        {{- if not .Config.read_only}}
         <input type="text" id="feedurl" name="feedurl" placeholder="Add a new feed" required
           hx-post="/feeds" hx-target="#feeds-list" hx-swap="beforeend"
           class="input input-sm w-full" value="" />
-        {{end}}
+        {{- end}}
+        {{- end}}
       </div>
-      {{block "perf" .}}
+      {{- block "perf" .}}
       <div id="perf" class="inset-x-0 bottom-0" hx-swap-oob="true">
         {{- $stats := .QueryStats -}}
         Performed {{$stats.Count}} {{$stats.Count | plural "query" "queries"}} in {{$stats.TotalDuration.Round 10000}}.
       </div>
-      {{end}}
+      {{- end}}
     </div>
 
     <div class="shrink-0 md:w-64 w-full h-full"></div>
@@ -110,6 +112,9 @@
 {{- end}}
 
 {{- define "POST /feeds"}}
+{{- if .Config.read_only}}
+{{- httpError 403 }}
+{{- end}}
 {{- $url := .Req.PostForm.feedurl | idx 0}}
 {{- $feed_id := (.Exec `INSERT INTO feed(url) VALUES(($1))` $url).LastInsertId }}
 {{- template "fetch_feed" .WithVars (dict "feed_id" $feed_id) }}
@@ -117,6 +122,9 @@
 {{- end}}
 
 {{- define "POST /feeds/:feed_id/fetch"}}
+{{- if .Config.read_only}}
+{{- httpError 403 }}
+{{- end}}
 {{- template "fetch_feed" .WithVars (dict "feed_id" (.Params.ByName "feed_id")) }}
 {{- end}}
 

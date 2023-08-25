@@ -9,7 +9,7 @@ import (
 )
 
 type XRss struct {
-	xtemplate xtemplate.Templates
+	xtemplate.Templates
 }
 
 // Interface guards
@@ -23,27 +23,28 @@ var (
 
 // Provision initialized the module and implements caddy.Provisioner.
 func (r *XRss) Provision(ctx caddy.Context) error {
-	if r.xtemplate.Database.Driver == "" {
-		r.xtemplate.Database.Driver = "sqlite3"
-		r.xtemplate.Database.Connstr = "file:rss.sqlite?_journal=WAL&_synchronous=NORMAL&_foreign_keys=true&_vacuum=full"
+	if r.Templates.Database.Driver == "" {
+		r.Templates.Database.Driver = "sqlite3"
+		r.Templates.Database.Connstr = "file:rss.sqlite?_journal=WAL&_synchronous=NORMAL&_foreign_keys=true&_vacuum=full"
 	}
-	r.xtemplate.TemplateRoot = "templates"
-	r.xtemplate.ContextRoot = "templates"
-	r.xtemplate.ExtraFuncs = funcLibrary
-	return r.xtemplate.Provision(ctx)
+	r.Templates.TemplateRoot = "templates"
+	r.Templates.ContextRoot = "schema"
+	r.Templates.Delimiters = []string{"{{", "}}"}
+	r.Templates.ExtraFuncs = funcLibrary
+	return r.Templates.Provision(ctx)
 }
 
 // Validate ensures t has a valid configuration and implements caddy.Validator.
 func (r *XRss) Validate() error {
-	return r.xtemplate.Validate()
+	return r.Templates.Validate()
 }
 
 // ServeHTTP implements caddyhttp.MiddlewareHandler.
 func (r *XRss) ServeHTTP(w http.ResponseWriter, req *http.Request, next caddyhttp.Handler) error {
-	return r.xtemplate.ServeHTTP(w, req, next)
+	return r.Templates.ServeHTTP(w, req, next)
 }
 
 // Cleanup  implements caddy.CleanerUpper.
 func (r *XRss) Cleanup() error {
-	return r.xtemplate.Cleanup()
+	return r.Templates.Cleanup()
 }

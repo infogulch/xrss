@@ -23,7 +23,9 @@ func init() {
 }
 
 func parseCaddyfile(h httpcaddyfile.Helper) (caddyhttp.MiddlewareHandler, error) {
-	rss := new(XRss)
+	r := new(XRss)
+	r.Templates.Config = make(map[string]string)
+	t := &r.Templates
 	for h.Next() {
 		for h.NextBlock(0) {
 			switch h.Val() {
@@ -31,17 +33,29 @@ func parseCaddyfile(h httpcaddyfile.Helper) (caddyhttp.MiddlewareHandler, error)
 				for nesting := h.Nesting(); h.NextBlock(nesting); {
 					switch h.Val() {
 					case "driver":
-						if !h.Args(&rss.xtemplate.Database.Driver) {
+						if !h.Args(&t.Database.Driver) {
 							return nil, h.ArgErr()
 						}
 					case "connstr":
-						if !h.Args(&rss.xtemplate.Database.Connstr) {
+						if !h.Args(&t.Database.Connstr) {
 							return nil, h.ArgErr()
 						}
 					}
 				}
+			case "config":
+				for nesting := h.Nesting(); h.NextBlock(nesting); {
+					var key, val string
+					key = h.Val()
+					if _, ok := t.Config[key]; ok {
+						return nil, h.Errf("Config key '%s' repeated", key)
+					}
+					if !h.Args(&val) {
+						return nil, h.ArgErr()
+					}
+					t.Config[key] = val
+				}
 			}
 		}
 	}
-	return rss, nil
+	return r, nil
 }

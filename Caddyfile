@@ -1,5 +1,5 @@
 {
-	debug
+	# debug
 
 	security {
 		local identity store localdb {
@@ -40,6 +40,20 @@
 		authorize with admins_policy
 
 		xrss {
+		}
+	}
+}
+
+:8082 {
+	route /static/* {
+		file_server
+	}
+
+	route /* {
+		xrss {
+			config {
+				read_only true
+			}
 		}
 	}
 }

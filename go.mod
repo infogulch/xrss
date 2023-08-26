@@ -2,9 +2,7 @@ module github.com/infogulch/caddy-xrss
 
 go 1.20
 
-require github.com/infogulch/caddy-xtemplate v0.0.0
-
-replace github.com/infogulch/caddy-xtemplate v0.0.0 => ../xtemplate
+require github.com/infogulch/caddy-xtemplate v0.0.0-20230825024535-1559e28c693e
 
 require (
 	github.com/caddyserver/caddy/v2 v2.6.4

@@ -3,7 +3,21 @@
 }
 
 :8080 {
+	route /static/* {
+		file_server
+	}
+
 	route {
-		xrss
+		xtemplate {
+			extra_funcs xrss
+
+			template_root templates
+			context_root schema
+
+			database {
+				driver sqlite3
+				connstr file:rss.sqlite?_journal=WAL&_synchronous=NORMAL&_foreign_keys=true&_vacuum=full
+			}
+		}
 	}
 }

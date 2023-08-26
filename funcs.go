@@ -2,17 +2,12 @@ package xrss
 
 import (
 	"fmt"
-	"html/template"
 	"io"
 	"net/http"
 	"time"
 
 	"github.com/mmcdole/gofeed"
 )
-
-var funcLibrary template.FuncMap = template.FuncMap{
-	"fetchFeed": funcFetchFeed,
-}
 
 type FetchResult struct {
 	StatusCode      int           `json:"status_code"`

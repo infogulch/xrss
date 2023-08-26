@@ -1,4 +1,4 @@
-module github.com/infogulch/caddy-xrss
+module github.com/infogulch/xrss
 
 go 1.20
 

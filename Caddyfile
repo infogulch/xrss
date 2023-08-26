@@ -9,7 +9,7 @@
 
 	route {
 		xtemplate {
-			extra_funcs xrss
+			funcs_modules xrss
 
 			template_root templates
 			context_root schema

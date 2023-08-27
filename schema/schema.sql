@@ -223,8 +223,4 @@ BEGIN
   UPDATE fetch
   SET added_count = added_count + CHANGES()
   WHERE id = (SELECT MAX(id) FROM fetch);
-
-  UPDATE feed
-  SET title = NEW.data ->> "$.feed.title"
-  WHERE feed.id = NEW.feed_id AND title IS NULL;
 END;

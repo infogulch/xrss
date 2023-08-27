@@ -118,7 +118,7 @@
 {{- $url := .Req.PostForm.feedurl | idx 0}}
 {{- $feed_id := (.Exec `INSERT INTO feed(url) VALUES(($1))` $url).LastInsertId }}
 {{- template "fetch_feed" .WithVars (dict "feed_id" $feed_id) }}
-{{- template "feed" .QueryRow `SELECT id, url, title FROM feed WHERE id=?` $feed_id}}
+{{- template "feed" .QueryRow `SELECT id, url, title FROM v_feed WHERE id=?` $feed_id}}
 {{- end}}
 
 {{- define "POST /feeds/:feed_id/fetch"}}

@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS fetch (
   id INTEGER PRIMARY KEY,
   feed_id INTEGER NOT NULL,
   added_count INTEGER NOT NULL,
+  fetched_epoch INTEGER GENERATED ALWAYS AS (unixepoch(data ->> '$.fetched_on')) STORED,
   data TEXT CHECK (JSON_VALID(data)),
   FOREIGN KEY (feed_id) REFERENCES feed (id)
 )
@@ -74,8 +75,8 @@ CREATE TABLE IF NOT EXISTS item (
   data TEXT CHECK (JSON_VALID(data)),
   guid TEXT GENERATED ALWAYS AS (data ->> '$.guid') STORED,
   published TEXT GENERATED ALWAYS AS (data ->> '$.publishedParsed') STORED,
-  FOREIGN KEY (feed_id) REFERENCES feed (id),
-  FOREIGN KEY (fetch_id) REFERENCES fetch (id)
+  published_epoch INTEGER GENERATED ALWAYS AS (unixepoch(data ->> '$.publishedParsed')) STORED,
+  FOREIGN KEY (fetch_id, feed_id) REFERENCES fetch (id, feed_id)
 )
 STRICT;
 
@@ -88,10 +89,10 @@ CREATE VIEW v_item AS
     feed_id,
     fetch_id,
     guid,
-    data ->> '$.title' AS title,
-    data ->> '$.description' AS description,
-    data ->> '$.publishedParsed' AS published,
-    data ->> '$.link' AS link,
+    COALESCE(data ->> '$.title', '') AS title,
+    COALESCE(data ->> '$.description', '') AS description,
+    COALESCE(data ->> '$.publishedParsed', data ->> '$.published', '') AS published,
+    COALESCE(data ->> '$.link', '') AS link,
     COALESCE(data ->> '$.image', (
       SELECT value ->> '$.attrs.url'
       FROM json_each(data -> '$.extensions.media.content')
@@ -104,7 +105,7 @@ CREATE VIEW v_item AS
         WHERE value ->> '$.type' LIKE 'image/%'
         GROUP BY 1
         HAVING key = MIN(key)
-    )) AS image,
+    ), '') AS image,
     data ->> '$.authors' AS authors,
     data ->> '$.authors[0].name' AS author,
     feed.title as feed_title,

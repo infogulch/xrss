@@ -54,16 +54,20 @@
         <span
           class="md:hidden h-full p-3 text-lg text-gray-600 bg-gray-100 rounded-lg scale-x-[-1]"
           onclick="document.getElementsByTagName('main')[0].classList.toggle('show-items')">&nbsp;⇌&nbsp;</span>
-        <span
-          class="p-3 text-lg text-center text-gray-600 bg-gray-100 rounded-lg">
-          {{.QueryVal `SELECT COALESCE((SELECT title FROM v_feed WHERE id=$1), 'All Feeds')` $feed_id}}</span>
+        <span class="p-3 text-lg text-center text-gray-600 bg-gray-100 rounded-lg">
+          {{.QueryVal `SELECT COALESCE((SELECT title FROM v_feed WHERE id=$1), 'All Feeds')` $feed_id}}
+        </span>
+        {{- if ne $feed_id 0}}
+        <a href="" hx-post="/feeds/{{$feed_id}}/refresh" hx-target="#items-panel" hx-swap="outerHTML scroll:top"
+          class="p-3 text-lg text-center text-gray-600 bg-gray-100 rounded-lg">⟳</a>
+        {{- end}}
       </div>
       <ul id="items" class="p-2 mt-16">
         {{- block "items" .}}
         {{- $feed_id := int (.Params.ByName "feed_id") }}
         {{- $offset := int (.Req.URL.Query.Get "offset") }}
         {{- $count := .QueryVal `SELECT COUNT(*) FROM v_item WHERE feed_id=$1 OR $1=0` $feed_id}}
-        {{- range .QueryRows `SELECT id, feed_title, title, description, image, author, published FROM v_item WHERE feed_id=$1 OR $1=0 ORDER BY published DESC LIMIT 10 OFFSET $1` $feed_id $offset }}
+        {{- range .QueryRows `SELECT id, feed_title, title, description, image, author, published FROM v_item WHERE feed_id=$1 OR $1=0 ORDER BY published DESC LIMIT 10 OFFSET $2` $feed_id $offset }}
         <li class="odd:bg-gray-100 h-[6em] flex flex-row gap-2 p-2">
           <div class="flex-none w-[5em] bg-cover rounded" style="background-image: url('{{.image}}');"></div>
           <div class="flow-root overflow-hidden">
@@ -83,8 +87,10 @@
           </div>
         </li>
         {{- end}}
-        {{- if lt $offset $count}}
-        <li hx-trigger="revealed" hx-swap="outerHTML" hx-get="items?offset={{ add $offset 10 }}">(loading...)</li>
+        {{- $next_offset := add $offset 10}}
+        {{- if lt $next_offset $count}}
+        <li hx-trigger="revealed" hx-swap="outerHTML"
+          hx-get="{{if $feed_id }}/feeds/{{$feed_id}}{{end}}/items?offset={{ $next_offset }}">(loading...)</li>
         {{- end}}
         {{- end}}
       </ul>
@@ -121,11 +127,12 @@
 {{- template "feed" .QueryRow `SELECT id, url, title FROM v_feed WHERE id=?` $feed_id}}
 {{- end}}
 
-{{- define "POST /feeds/:feed_id/fetch"}}
+{{- define "POST /feeds/:feed_id/refresh"}}
 {{- if .Config.read_only}}
 {{- httpError 403 }}
 {{- end}}
 {{- template "fetch_feed" .WithVars (dict "feed_id" (.Params.ByName "feed_id")) }}
+{{- template "GET /feeds/:feed_id/" .}}
 {{- end}}
 
 {{- define "fetch_feed"}}
@@ -136,5 +143,6 @@
 {{- $result := .Exec `INSERT INTO ingest(feed_id, data) VALUES ($1, $2)` $feed_id (toJson $response.Value) }}
 {{- else }}
 Failed to fetch rss feed: {{$response.Error}}
+{{- httpError 502 }}
 {{- end}}
 {{- end}}

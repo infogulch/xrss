@@ -105,7 +105,7 @@ CREATE VIEW v_item AS
         WHERE value ->> '$.type' LIKE 'image/%'
         GROUP BY 1
         HAVING key = MIN(key)
-    ), '') AS image,
+    ), feed.image, '') AS image,
     data ->> '$.authors' AS authors,
     data ->> '$.authors[0].name' AS author,
     feed.title as feed_title,
@@ -113,7 +113,7 @@ CREATE VIEW v_item AS
   FROM
     item
     LEFT JOIN (
-      SELECT id, title
+      SELECT id, title, image
       FROM v_feed
     ) AS feed ON item.feed_id = feed.id;
 

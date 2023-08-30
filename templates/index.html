@@ -58,8 +58,10 @@
           {{.QueryVal `SELECT COALESCE((SELECT title FROM v_feed WHERE id=$1), 'All Feeds')` $feed_id}}
         </span>
         {{- if ne $feed_id 0}}
+        {{- if not .Config.read_only}}
         <a href="" hx-post="/feeds/{{$feed_id}}/refresh" hx-target="#items-panel" hx-swap="outerHTML scroll:top"
           class="p-3 text-lg text-center text-gray-600 bg-gray-100 rounded-lg">⟳</a>
+        {{- end}}
         {{- end}}
       </div>
       <ul id="items" class="p-2 mt-16">

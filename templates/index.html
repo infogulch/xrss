@@ -68,22 +68,23 @@
         {{- $offset := int (.Req.URL.Query.Get "offset") }}
         {{- $count := .QueryVal `SELECT COUNT(*) FROM v_item WHERE feed_id=$1 OR $1=0` $feed_id}}
         {{- range .QueryRows `SELECT id, feed_title, title, description, image, author, published FROM v_item WHERE feed_id=$1 OR $1=0 ORDER BY published DESC LIMIT 10 OFFSET $2` $feed_id $offset }}
-        <li class="odd:bg-gray-100 h-[6em] flex flex-row gap-2 p-2">
-          <div class="flex-none w-[5em] bg-cover rounded" style="background-image: url('{{.image}}');"></div>
-          <div class="flow-root overflow-hidden">
-            <div class="flex flex-row items-baseline">
-              <div class="flex-initial pr-1 text-lg font-semibold truncate">{{.title | stripHTML | trustHtml}}</div>·
-              <div class="flex-none pl-1 pr-1 text-sm text-gray-800">{{.feed_title}}</div>·
-              <div class="flex-none pl-1 pr-1 text-sm text-gray-800">{{.author}}</div>·
-              <div class="group/tip relative flex-none pl-1 text-sm text-gray-800">
-                <time datetime="{{.published}}">{{.published | humanize "time:2006-01-02T15:04:05Z07:00"}}</time>
-                <span
-                  class="group-hover/tip:visible left-full top-full mr-[-999px] -translate-x-full absolute invisible p-1 text-gray-200 bg-gray-800 rounded shadow-lg">
-                  {{- .published | toDate "2006-01-02T15:04:05Z07:00" | date "Monday, 02 Jan 2006 15:04:05 MST" -}}
-                </span>
+        <li class="odd:bg-gray-100 h-[7.5em] flex flex-row gap-2 p-2">
+          <div class="flex-none w-[6em] h-[6em] m-1 bg-cover rounded" style="background-image: url('{{.image}}');"></div>
+          <div class="flow-root overflow-hidden items-baseline">
+            <div class="flex flex-col xl:flex-row">
+              <div class="flex-initial pr-2 text-lg font-semibold truncate">{{.title | stripHTML | trustHtml}}</div>
+              <div class="flex-none flex flex-row items-baseline">
+                <div class="flex-none pl-1 pr-1 text-sm text-gray-800">{{.feed_title}}</div>·
+                <div class="flex-none pl-1 pr-1 text-sm text-gray-800">{{.author}}</div>·
+                <div class="group/tip relative flex-none pl-1 text-sm text-gray-800">
+                  <time datetime="{{.published}}">{{.published | humanize "time:2006-01-02T15:04:05Z07:00"}}</time>
+                  <span class="group-hover/tip:visible left-full top-full mr-[-999px] -translate-x-full absolute invisible p-1 text-gray-200 bg-gray-800 rounded shadow-lg">
+                    {{- .published | toDate "2006-01-02T15:04:05Z07:00" | date "Monday, 02 Jan 2006 15:04:05 MST" -}}
+                  </span>
+                </div>
               </div>
             </div>
-            <div class="line-clamp-2 text-gray-500">{{.description | stripHTML | abbrev 2000 | trustHtml}}</div>
+            <div class="line-clamp-3 text-gray-500">{{.description | stripHTML | abbrev 2000 | trustHtml}}</div>
           </div>
         </li>
         {{- end}}

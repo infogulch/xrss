@@ -108,6 +108,7 @@ CREATE VIEW v_item AS
     ), feed.image, '') AS image,
     data ->> '$.authors' AS authors,
     data ->> '$.authors[0].name' AS author,
+    COALESCE(data -> '$.categories', '[]') AS categories,
     feed.title as feed_title,
     data
   FROM

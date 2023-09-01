@@ -73,10 +73,10 @@
           <div class="flex-none w-[6em] h-[6em] m-1 bg-cover rounded" style="background-image: url('{{.image}}');"></div>
           <div class="flow-root overflow-hidden items-baseline cursor-pointer" hx-get="/feeds/{{.feed_id}}/items/{{.id}}/expanded" hx-swap="outerHTML" hx-target="closest li">
             <div class="flex flex-col xl:flex-row">
-              <div class="flex-initial pr-2 text-lg font-semibold truncate">{{.title | stripHTML | trustHtml}}</div>
+              <div class="flex-initial pr-2 text-lg font-semibold truncate">{{.title | sanitizeHtml "strict" }}</div>
               <div class="flex-none flex flex-row items-baseline">
-                <div class="flex-none pl-1 pr-1 text-sm text-gray-800">{{.feed_title}}</div>·
-                <div class="flex-none pl-1 pr-1 text-sm text-gray-800">{{.author}}</div>·
+                <div class="flex-none pl-1 pr-1 text-sm text-gray-800">{{.feed_title | sanitizeHtml "strict" }}</div>·
+                <div class="flex-none pl-1 pr-1 text-sm text-gray-800">{{.author | sanitizeHtml "strict" }}</div>·
                 <div class="group/tip relative flex-none pl-1 text-sm text-gray-800">
                   <time datetime="{{.published}}">{{.published | humanize "time:2006-01-02T15:04:05Z07:00"}}</time>
                   <span class="group-hover/tip:visible left-full top-full mr-[-999px] -translate-x-full absolute invisible p-1 text-gray-200 bg-gray-800 rounded shadow-lg">
@@ -85,7 +85,7 @@
                 </div>
               </div>
             </div>
-            <div class="line-clamp-2 xl:line-clamp-3 text-gray-500">{{.description | stripHTML | abbrev 2000 | trustHtml}}</div>
+            <div class="line-clamp-2 xl:line-clamp-3 text-gray-500">{{.description | abbrev 4000 | sanitizeHtml "strict"}}</div>
           </div>
         </li>
         {{- end}}
@@ -126,16 +126,18 @@
 {{- end}}
 
 {{- define "GET /feeds/:feed_id/items/:item_id/expanded"}}
-{{- with .QueryRow `SELECT feed_id, id, feed_title, title, link, image, author, published, categories FROM v_item WHERE feed_id = $1 AND id = $2` (.Params.ByName "feed_id") (.Params.ByName "item_id")}}
+{{- $feed_id := .Params.ByName "feed_id" }}
+{{- $item_id := .Params.ByName "item_id" }}
 <li class="odd:bg-gray-100 p-4 flex flex-col">
-  <div class="flex-none flex flex-row gap-2 cursor-pointer" hx-get="/feeds/{{.feed_id}}/items/{{.id}}/" hx-swap="outerHTML" hx-target="closest li">
+  <div class="flex-none flex flex-row gap-2 cursor-pointer" hx-get="/feeds/{{$feed_id}}/items/{{$item_id}}/" hx-swap="outerHTML" hx-target="closest li">
+    {{- with .QueryRow `SELECT feed_id, id, feed_title, title, link, image, author, published, categories FROM v_item WHERE feed_id = $1 AND id = $2` $feed_id $item_id }}
     <div class="flex-none w-[6em] h-[6em] m-1 bg-cover rounded" style="background-image: url('{{.image}}');"></div>
     <div class="flow-root overflow-hidden items-baseline">
       <div class="flex flex-col">
-        <div class="flex-initial pr-2 text-lg font-semibold truncate"><a href="{{.link}}" target="_blank">{{.title | stripHTML | trustHtml}} ⧉</a></div>
+        <div class="flex-initial pr-2 text-lg font-semibold truncate"><a href="{{.link}}" target="_blank" rel="nofollow noopener">{{.title | sanitizeHtml "strict"}} ⧉</a></div>
         <div class="flex-none flex flex-row items-baseline">
-          <div class="flex-none pl-1 pr-1 text-sm text-gray-800">{{.feed_title}}</div>·
-          <div class="flex-none pl-1 pr-1 text-sm text-gray-800">{{.author}}</div>·
+          <div class="flex-none pl-1 pr-1 text-sm text-gray-800">{{.feed_title | sanitizeHtml "strict"}}</div>·
+          <div class="flex-none pl-1 pr-1 text-sm text-gray-800">{{.author | sanitizeHtml "strict"}}</div>·
           <div class="group/tip relative flex-none pl-1 text-sm text-gray-800">
             <time datetime="{{.published}}">{{.published | humanize "time:2006-01-02T15:04:05Z07:00"}}</time>
             <span class="group-hover/tip:visible left-full top-full mr-[-999px] -translate-x-full absolute invisible p-1 text-gray-200 bg-gray-800 rounded shadow-lg">
@@ -145,14 +147,13 @@
         </div>
       </div>
     </div>
+    {{- end}}
   </div>
-  <iframe class="flex-none w-full" src="/feeds/{{.feed_id}}/items/{{.id}}/content" onload="this.height = this.contentWindow.document.body.scrollHeight"></iframe>
+  <div>
+    {{- $content := .QueryVal `SELECT COALESCE(data ->> '$.content', data ->> '$.description', '') FROM v_item WHERE feed_id = $1 AND id = $2` $feed_id $item_id }}
+    {{- sanitizeHtml "externalugc" $content }}
+  </div>
 </li>
-{{- end}}
-{{- end}}
-
-{{- define "GET /feeds/:feed_id/items/:item_id/content"}}
-{{ (.QueryVal `SELECT COALESCE(data ->> '$.content', data ->> '$.description', '') FROM v_item WHERE feed_id = $1 AND id = $2` (.Params.ByName "feed_id") (.Params.ByName "item_id")) | trustHtml }}
 {{- end}}
 
 {{- define "POST /feeds"}}

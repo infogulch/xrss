@@ -20,8 +20,9 @@
         <a hx-get="/feeds/{{.id}}/" hx-target="#items-panel" hx-swap="outerHTML show:top" hx-push-url="true"
           href="/feed/{{.id}}/"
           class="flex block px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg">
-          {{if .image}}<img src="{{.image}}" class="w-5 h-5 mr-1">
-          {{else}}<span class="text-zinc-200 w-5 h-5 mr-1 font-serif font-bold text-center bg-gray-800 rounded-sm">{{.title | substr 0 1 | upper}}</span>{{end}}{{.title}}</a>
+          {{- if .image}}<img src="{{.image}}" class="w-5 h-5 mr-1">
+          {{- else}}<span class="text-zinc-200 w-5 h-5 mr-1 font-serif font-bold text-center bg-gray-800 rounded-sm">{{.title | substr 0 1 | upper}}</span>{{end}}
+          {{- .title}}</a>
       </li>
       {{- end}}
       {{- end}}
@@ -90,7 +91,7 @@
       {{- end}}
       {{- $next_offset := add $offset 10}}
       {{- if lt $next_offset $count}}
-      <li hx-trigger="revealed" hx-swap="outerHTML"
+      <li hx-trigger="intersect" hx-swap="outerHTML"
         hx-get="{{if $feed_id }}/feeds/{{$feed_id}}{{end}}/items?offset={{ $next_offset }}">(loading...)</li>
       {{- end}}
       {{- end}}

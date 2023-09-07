@@ -29,6 +29,8 @@ Future
 GOFLAGS='-tags="sqlite_json"' CGO_ENABLED=1 xcaddy build --with github.com/infogulch/caddy-xtemplate --with github.com/greenpau/caddy-security --with github.com/infogulch/xrss
 
 GOFLAGS='-tags="sqlite_json"' CGO_ENABLED=1 XCADDY_DEBUG=1 xcaddy build --with github.com/infogulch/caddy-xtemplate=../xtemplate --with github.com/infogulch/xrss=. --with github.com/greenpau/caddy-security
+
+tailwindcss -i static/main.css -o static/site.css --content './templates/**/*' -w
 ```
 
 ## Resources

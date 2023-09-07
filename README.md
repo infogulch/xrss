@@ -33,6 +33,8 @@ GOFLAGS='-tags="sqlite_json"' CGO_ENABLED=1 XCADDY_DEBUG=1 xcaddy build --with g
 
 ## Resources
 
+https://tailwindcss.com/docs/
+
 https://www.hyperui.dev/
 
 https://hurl.dev/docs/hurl-file.html
@@ -45,8 +47,10 @@ https://github.com/cornelk/goscrape
 
 https://github.com/robfig/cron
 
-Small view should use: https://play.tailwindcss.com/bQJZaR1c6O + https://tailwindcss.com/docs/hover-focus-and-other-states#focus-within
+Responsive layout demo: https://play.tailwindcss.com/KJTJ5n574r
 
 7 Restful Routes: https://gist.github.com/alexpchin/09939db6f81d654af06b
 
 https://github.com/caddyserver/xcaddy/pull/62
+
+https://classless.de/classless.css

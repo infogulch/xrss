@@ -19,7 +19,9 @@
       <li class="overflow-hidden">
         <a hx-get="/feeds/{{.id}}/" hx-target="#items-panel" hx-swap="outerHTML show:top" hx-push-url="true"
           href="/feed/{{.id}}/"
-          class=" block px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg">{{.title}}</a>
+          class="flex block px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg">
+          {{if .image}}<img src="{{.image}}" class="w-5 h-5 mr-1">
+          {{else}}<span class="text-zinc-200 w-5 h-5 mr-1 font-serif font-bold text-center bg-gray-800 rounded-sm">{{.title | substr 0 1 | upper}}</span>{{end}}{{.title}}</a>
       </li>
       {{- end}}
       {{- end}}
@@ -43,7 +45,7 @@
 
   {{- block "items-panel" .}}
   {{- $feed_id := int (.Params.ByName "feed_id") }}
-  <div id="items-panel" class="md:flex-1 shrink-0 snap-start w-full h-full min-w-0 overflow-y-auto" style="scrollbar-gutter: stable;" hx-sync="this:queue all">
+  <div id="items-panel" class="md:flex-1 shrink-0 snap-start w-full h-full min-w-0 overflow-y-auto" style="scrollbar-gutter: stable;">
     <div class="sticky top-0 z-20 flex w-full gap-2 p-2 pb-2 bg-white">
       <span
         class="md:hidden h-full p-3 text-lg text-gray-600 bg-gray-100 rounded-lg scale-x-[-1]"

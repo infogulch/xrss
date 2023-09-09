@@ -91,7 +91,7 @@
       {{- end}}
       {{- $next_offset := add $offset 10}}
       {{- if lt $next_offset $count}}
-      <li hx-trigger="intersect" hx-swap="outerHTML"
+      <li hx-trigger="intersect once" hx-swap="outerHTML"
         hx-get="{{if $feed_id }}/feeds/{{$feed_id}}{{end}}/items?offset={{ $next_offset }}">(loading...)</li>
       {{- end}}
       {{- end}}

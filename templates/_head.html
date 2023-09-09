@@ -4,3 +4,30 @@
 <script src="/static/tailwindcss@3.3.3/tailwindcss.js"></script>
 <script src="/static/htmx.org@1.9.3/dist/htmx.js"></script>
 <link rel="stylesheet" href="/static/article-content.css">
+<script>
+  (() => {
+    let nextScopeId = 0;
+    const CSS_SCOPE_PATTERN = new RegExp('(:scope)(?![A-Za-z0-9\_\-])', 'g');
+    new MutationObserver((records, observer) => {
+      for (let record of records) {
+        if (record.type !== "childList") continue;
+        const pending = [...record.addedNodes];
+        while (pending.length > 0) {
+          const node = pending.shift();
+          pending.push(...node.childNodes);
+          if (node.nodeName !== 'STYLE') continue;
+          if (!node.parentNode || node.parentNode.nodeName === 'HEAD') continue;
+          if (!'scoped' in node.dataset) continue;
+          delete node.dataset.scoped;
+          var dataScope = node.parentNode.dataset.scope;
+          if (!dataScope) {
+            nextScopeId++;
+            node.parentNode.dataset[`scope-${nextScopeId}`] = '';
+            dataScope = nextScopeId;
+          }
+          node.textContent = node.textContent.replace(CSS_SCOPE_PATTERN, `[data-scope-${dataScope}]`);
+        }
+      }
+    }).observe(document.documentElement, { childList: true, subtree: true });
+  })();
+</script>

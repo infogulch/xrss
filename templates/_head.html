@@ -1,33 +1,44 @@
-<!DOCTYPE html>
+<!doctype html>
 <meta charset="UTF-8" lang="en">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script src="/static/tailwindcss@3.3.3/tailwindcss.js"></script>
-<script src="/static/htmx.org@1.9.3/dist/htmx.js"></script>
-<link rel="stylesheet" href="/static/article-content.css">
+<meta name="htmx-config" content='{"useTemplateFragments":true}'>
+<link rel="stylesheet" href="/assets/reset.css">
+<script src="/assets/htmx.org@1.9.3/dist/htmx.js"></script>
+<script src="/assets/tailwindcss@3.3.3/tailwindcss.js"></script>
+<link rel="stylesheet" href="/assets/article-content.css">
 <script>
-  (() => {
-    let nextScopeId = 0;
-    const CSS_SCOPE_PATTERN = new RegExp('(:scope)(?![A-Za-z0-9\_\-])', 'g');
-    new MutationObserver((records, observer) => {
-      for (let record of records) {
-        if (record.type !== "childList") continue;
-        const pending = [...record.addedNodes];
-        while (pending.length > 0) {
-          const node = pending.shift();
-          pending.push(...node.childNodes);
-          if (node.nodeName !== 'STYLE') continue;
-          if (!node.parentNode || node.parentNode.nodeName === 'HEAD') continue;
-          if (!'scoped' in node.dataset) continue;
-          delete node.dataset.scoped;
-          var dataScope = node.parentNode.dataset.scope;
-          if (!dataScope) {
-            nextScopeId++;
-            node.parentNode.dataset[`scope-${nextScopeId}`] = '';
-            dataScope = nextScopeId;
-          }
-          node.textContent = node.textContent.replace(CSS_SCOPE_PATTERN, `[data-scope-${dataScope}]`);
-        }
-      }
-    }).observe(document.documentElement, { childList: true, subtree: true });
-  })();
+	// 🌘 CSS Scope Inline (https://github.com/infogulch/css-scope-inline)
+	((window) => {
+		if (window.scopedCssMutationObserver) return; // Don't install MutationObserver if one is already present
+		window.scopedCssMutationObserver = true;
+		var nextScopeId = 0;
+		const CSS_SCOPE_ANI_PATTERN = new RegExp('(?<=(@keyframes|animation:|animation-name:)[^{};]+)(\\\\:scope)', 'g'); // Precompile the matching pattern
+		const CSS_SCOPE_PATTERN = new RegExp('(:scope)(?![A-Za-z0-9\_\-])', 'g'); // Precompile the matching pattern
+		new MutationObserver((mutations, observer) => {
+			for (let mutation of mutations) {
+				if (mutation.type !== "childList") continue;  // Skip if not mutating nodes.
+				const nodes = [...mutation.addedNodes];  // Get new nodes.
+				for (var node = nodes.shift(); node != null; node = nodes.shift()) { // Process nodes.
+					nodes.push(...node.childNodes); // Also process children.
+					if (node.nodeName !== 'STYLE') continue; // Skip if not a <style>
+					if (!node.parentNode || node.parentNode?.nodeName === 'HEAD') continue // Skip if no parent. Don't style <head>
+					if (!('scoped' in node.dataset)) continue; // Skip if missing data-scoped indicator.
+					delete node.dataset.scopedCss; // Remove indicator to prevent future processing.
+					var scopeId = node.parentNode.dataset.cssScope; // Get parent's current scope id if present
+					if (!scopeId) {
+						window.maxScopedCssId = scopeId = ++nextScopeId; // Increment scope id, expose the max as a window variable.
+						node.parentNode.dataset.cssScope = scopeId; // Set parent's scope id as a data-* attribute, avoiding clashes with existing css
+					}
+					node.textContent = node.textContent
+						.replace(CSS_SCOPE_ANI_PATTERN, `data-css-scope-${scopeId}`) // Replaces animation match
+						.replace(CSS_SCOPE_PATTERN, `[data-css-scope="${scopeId}"]`); // Replaces match with attribute selector
+				}
+			}
+		}).observe(document.documentElement, { childList: true, subtree: true });
+	})(window);
+</script>
+<script>
+	function scrollElementIntoView(selector) {
+		document.querySelector(selector).scrollIntoView({ behavior: 'smooth' });
+	}
 </script>

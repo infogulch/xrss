@@ -1,10 +1,12 @@
 {
-	# debug
+	debug
 }
 
 :8080 {
-	route /static/* {
-		file_server
+	route /assets/* {
+		file_server {
+			root context/
+		}
 	}
 
 	route {
@@ -12,7 +14,7 @@
 			funcs_modules xrss
 
 			template_root templates
-			context_root schema
+			context_root context
 
 			database {
 				driver sqlite3

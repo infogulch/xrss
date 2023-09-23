@@ -1,116 +1,277 @@
 {{template "/_head.html"}}
 <title>Home</title>
 
-<main class="flex w-[100vw] h-[100vh] snap-x snap-mandatory overflow-x-scroll bg-white" style="scrollbar-width: none;">
-  <div id="feeds-panel" class="shrink-0 snap-start md:w-64 flex flex-col w-full h-full p-2 overflow-y-auto">
-    <div class="flex mb-6">
-      <span class="p-3 text-lg text-center text-gray-600 bg-gray-100 rounded-lg">XRss</span>
-      <span
-        class="md:hidden right-0 h-full p-3 ml-auto text-lg text-gray-600 bg-gray-100 rounded-lg"
-        onclick="document.getElementById('items-panel').scrollIntoView({behavior:'smooth'})">&nbsp;⇌&nbsp;</span>
-    </div>
-    <ul id="feeds-list" class="space-y-1">
-      <li class="overflow-hidden">
-        <a hx-get="/" hx-target="body" href="/" hx-push-url="true" hx-swap="outerHTML show:#items-panel:top"
-          class="block px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg">All Feeds</a>
-      </li>
-      {{- range .QueryRows `SELECT id, url, title, image FROM v_feed`}}
-      {{- block "feed" .}}
-      <li class="overflow-hidden">
-        <a hx-get="/feeds/{{.id}}/" hx-target="#items-panel" hx-swap="outerHTML show:top" hx-push-url="true"
-          href="/feed/{{.id}}/"
-          class="flex block px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg">
-          {{- if .image}}<img src="{{.image}}" class="w-5 h-5 mr-1">
-          {{- else}}<span class="text-zinc-200 w-5 h-5 mr-1 font-serif font-bold text-center bg-gray-800 rounded-sm">{{.title | substr 0 1 | upper}}</span>{{end}}
-          {{- .title}}</a>
-      </li>
-      {{- end}}
-      {{- end}}
-    </ul>
-    <div class="inset-x-0 bottom-0 mt-auto">
-      {{- block "newfeed" .}}
-      {{- if not .Config.read_only}}
-      <input type="text" id="feedurl" name="feedurl" placeholder="Add a new feed" required
-        hx-post="/feeds" hx-target="#feeds-list" hx-swap="beforeend"
-        class="input input-sm w-full" value="" />
-      {{- end}}
-      {{- end}}
-    </div>
-    {{- block "perf" .}}
-    <div id="perf" class="inset-x-0 bottom-0" hx-swap-oob="true">
-      {{- $stats := .QueryStats -}}
-      Performed {{$stats.Count}} {{$stats.Count | plural "query" "queries"}} in {{$stats.TotalDuration.Round 10000}}.
-    </div>
-    {{- end}}
-  </div>
+<main>
+	<style data-scoped>
+		:scope {
+			display: flex;
+			overflow-x: scroll;
+			background-color: #ffffff;
+			scroll-snap-type: x mandatory;
+			width: 100vw;
+			height: 100vh;
+			scrollbar-width: none;
+		}
+	</style>
+	<section id="feeds-panel">
+		<style data-scoped>
+			:scope {
+				display: flex;
+				overflow-y: auto;
+				padding: 0.5rem;
+				flex-direction: column;
+				flex-shrink: 0;
+				width: 100%;
+				height: 100%;
+				scroll-snap-align: start;
+				scrollbar-gutter: stable;
 
-  {{- block "items-panel" .}}
-  {{- $feed_id := int (.Params.ByName "feed_id") }}
-  <div id="items-panel" class="md:flex-1 shrink-0 snap-start w-full h-full min-w-0 overflow-y-auto" style="scrollbar-gutter: stable;">
-    <div class="sticky top-0 z-20 flex w-full gap-2 p-2 pb-2 bg-white">
-      <span
-        class="md:hidden h-full p-3 text-lg text-gray-600 bg-gray-100 rounded-lg scale-x-[-1]"
-        onclick="document.getElementById('feeds-panel').scrollIntoView({behavior:'smooth'})">&nbsp;⇌&nbsp;</span>
-      <span class="p-3 text-lg text-center text-gray-600 bg-gray-100 rounded-lg">
-        {{.QueryVal `SELECT COALESCE((SELECT title FROM v_feed WHERE id=$1), 'All Feeds')` $feed_id}}
-      </span>
-      {{- if ne $feed_id 0}}
-      {{- if not .Config.read_only}}
-      <a href="" hx-post="/feeds/{{$feed_id}}/refresh" hx-target="#items-panel" hx-swap="outerHTML scroll:top"
-        class="p-3 text-lg text-center text-gray-600 bg-gray-100 rounded-lg">⟳</a>
-      {{- end}}
-      {{- end}}
-    </div>
-    <ul id="items" class="p-2">
-      {{- block "items" .}}
-      {{- $feed_id := int (.Params.ByName "feed_id") }}
-      {{- $offset := int (.Req.URL.Query.Get "offset") }}
-      {{- $count := .QueryVal `SELECT COUNT(*) FROM v_item WHERE feed_id=$1 OR $1=0` $feed_id}}
-      {{- range .QueryRows `SELECT feed_id, id, feed_title, title, description, image, author, published FROM v_item WHERE feed_id=$1 OR $1=0 ORDER BY published DESC LIMIT 10 OFFSET $2` $feed_id $offset }}
-      {{- block "item" .}}
-      <li class="odd:bg-gray-100 max-h-7.5em h-[7.5em] flex flex-row gap-2 p-2 cursor-pointer transition" hx-get="/feeds/{{.feed_id}}/items/{{.id}}/expanded" hx-swap="outerHTML transition:true">
-        <div class="flex-none w-[6em] h-[6em] m-1 bg-cover rounded" style="background-image: url('{{.image}}');"></div>
-        <div class="items-baseline flow-root overflow-hidden">
-          <div class="xl:flex-row flex flex-col">
-            <div class="flex-initial pr-2 text-lg font-semibold truncate">{{.title | sanitizeHtml "strict" }}</div>
-            <div class="flex flex-row items-baseline flex-none">
-              <div class="flex-none pl-1 pr-1 text-sm text-gray-800">{{.feed_title | sanitizeHtml "strict" }}</div>·
-              <div class="flex-none pl-1 pr-1 text-sm text-gray-800">{{.author | sanitizeHtml "strict" }}</div>·
-              <div class="group/tip relative flex-none pl-1 text-sm text-gray-800">
-                <time datetime="{{.published}}">{{.published | humanize "time:2006-01-02T15:04:05Z07:00"}}</time>
-                <span class="group-hover/tip:visible left-full top-full mr-[-999px] -translate-x-full absolute invisible p-1 text-gray-200 bg-gray-800 rounded shadow-lg">
-                  {{- .published | toDate "2006-01-02T15:04:05Z07:00" | date "Monday, 02 Jan 2006 15:04:05 MST" -}}
-                </span>
-              </div>
-            </div>
-          </div>
-          <div class="line-clamp-2 xl:line-clamp-3 text-gray-500">{{.description | abbrev 4000 | sanitizeHtml "strict"}}</div>
-        </div>
-      </li>
-      {{- end}}
-      {{- end}}
-      {{- $next_offset := add $offset 10}}
-      {{- if lt $next_offset $count}}
-      <li hx-trigger="intersect once" hx-swap="outerHTML"
-        hx-get="{{if $feed_id }}/feeds/{{$feed_id}}{{end}}/items?offset={{ $next_offset }}">(loading...)</li>
-      {{- end}}
-      {{- end}}
-    </ul>
-  </div>
-  {{- end}}
+				@media (min-width: 768px) {
+					width: 16rem;
+				}
+			}
+
+			:scope header {
+				display: flex;
+				margin-bottom: 1.5rem;
+
+				& span {
+					padding: 0.75rem;
+					border-radius: 0.5rem;
+					font-size: 1.125rem;
+					line-height: 1.75rem;
+					text-align: center;
+					color: #4B5563;
+					background-color: #F3F4F6;
+				}
+
+				& button {
+					right: 0;
+					padding: 0.75rem;
+					margin-left: auto;
+					border-radius: 0.5rem;
+					height: 100%;
+					font-size: 1.125rem;
+					line-height: 1.75rem;
+					color: #4B5563;
+					background-color: #F3F4F6;
+
+					@media (min-width: 768px) {
+						display: none;
+					}
+				}
+			}
+
+			:scope ol {
+				& li+li {
+					margin-top: 0.25rem;
+				}
+
+				& li {
+					overflow: hidden;
+
+					& a {
+						display: flex;
+						padding: 0.5rem 1rem;
+						border-radius: 0.5rem;
+						font-size: 0.875rem;
+						line-height: 1.25rem;
+						font-weight: 500;
+						color: #374151;
+						background-color: #F3F4F6;
+
+						& img {
+							margin-right: 0.25rem;
+							width: 1.25rem;
+							height: 1.25rem;
+						}
+
+						& span {
+							margin-right: 0.25rem;
+							border-radius: 0.125rem;
+							width: 1.25rem;
+							height: 1.25rem;
+							font-family: Georgia, Cambria, "Times New Roman", Times, serif;
+							font-weight: 700;
+							text-align: center;
+							background-color: #1F2937;
+						}
+					}
+				}
+			}
+
+			:scope footer {
+				right: 0;
+				left: 0;
+				bottom: 0;
+				margin-top: auto;
+
+				& input {
+					width: 100%;
+				}
+			}
+		</style>
+		<header>
+			<span>XRss</span>
+			<button onclick="scrollElementIntoView('#items-panel')">&nbsp;⇌&nbsp;</button>
+		</header>
+		<ol id="feeds-list">
+			<li><a href="/" hx-get="/" hx-target="body" hx-push-url="true" hx-swap="outerHTML show:#items-panel:top">All Feeds</a></li>
+			{{- range .QueryRows `SELECT id, url, title, image FROM v_feed`}}
+			{{- block "feed" .}}
+			<li>
+				<a hx-get="/feeds/{{.id}}/" hx-target="#items-panel" hx-swap="outerHTML show:top" hx-push-url="true" href="/feed/{{.id}}/">
+					{{- if .image}}<img src="{{.image}}">{{- else}}<span>{{.title | substr 0 1 | upper}}</span>{{end}}
+					{{- .title -}}
+				</a>
+			</li>
+			{{- end}}
+			{{- end}}
+		</ol>
+		<footer>
+			{{- block "newfeed" .}}
+			{{- if not .Config.read_only}}
+			<input type="text" id="feedurl" name="feedurl" placeholder="Add a new feed" value="" required
+				hx-post="/feeds" hx-target="#feeds-list" hx-swap="beforeend" />
+			{{- end}}
+			{{- end}}
+			{{- block "perf" .}}
+			<div id="perf" hx-swap-oob="true">
+				{{- $stats := .QueryStats -}}
+				Performed {{$stats.Count}} {{$stats.Count | plural "query" "queries"}} in {{$stats.TotalDuration.Round 10000}}.
+			</div>
+			{{- end}}
+		</footer>
+	</section>
+
+	{{- block "items-panel" .}}
+	{{- $feed_id := int (.Params.ByName "feed_id") }}
+	<section id="items-panel">
+		<style data-scoped>
+			:scope {
+				flex-shrink: 0;
+				width: 100%;
+				min-width: 0;
+				height: 100%;
+				scroll-snap-align: start;
+				scrollbar-gutter: stable;
+
+				@media (min-width: 768px) {
+					flex: 1 1 0%;
+				}
+			}
+
+			:scope header {
+				display: flex;
+				position: sticky;
+				top: 0;
+				z-index: 20;
+				padding: 0.5rem;
+				padding-bottom: 0.5rem;
+				gap: 0.5rem;
+				width: 100%;
+				background-color: #ffffff;
+
+				& * {
+					padding: 0.75rem;
+					border-radius: 0.5rem;
+					height: 100%;
+					font-size: 1.125rem;
+					line-height: 1.75rem;
+					color: #4B5563;
+					background-color: #F3F4F6;
+				}
+
+				& .mobile {
+					@media (min-width: 768px) {
+						display: none;
+					}
+				}
+			}
+
+			:scope ol {
+				padding: 0.5rem;
+
+				& li:nth-child(2n+1) {
+					background-color: #F3F4F6;
+				}
+
+				& li {
+					display: flex;
+					padding: 0.5rem;
+					flex-direction: row;
+					gap: 0.5rem;
+					cursor: pointer;
+					height: 7.5em;
+
+					& img {
+						margin: 0.25rem;
+						flex: none;
+						border-radius: 0;
+						background-size: cover;
+						width: 6em;
+						height: 6em;
+					}
+				}
+			}
+		</style>
+		<header>
+			<button class="mobile" onclick="scrollElementIntoView('#feeds-panel')">&nbsp;⇌&nbsp;</button>
+			<span>{{.QueryVal `SELECT COALESCE((SELECT title FROM v_feed WHERE id=$1), 'All Feeds')` $feed_id}}</span>
+			{{- if and (ne $feed_id 0) (not .Config.read_only)}}
+			<button hx-post="/feeds/{{$feed_id}}/refresh" hx-target="#items-panel" hx-swap="outerHTML scroll:top">⟳</button>
+			{{- end}}
+		</header>
+		<ol id="items" class="p-2">
+			{{- block "items" .}}
+			{{- $feed_id := int (.Params.ByName "feed_id") }}
+			{{- $offset := int (.Req.URL.Query.Get "offset") }}
+			{{- $count := .QueryVal `SELECT COUNT(*) FROM v_item WHERE feed_id=$1 OR $1=0` $feed_id}}
+			{{- range .QueryRows `SELECT feed_id, id, feed_title, title, description, image, author, published FROM v_item WHERE feed_id=$1 OR $1=0 ORDER BY published DESC LIMIT 10 OFFSET $2` $feed_id $offset }}
+			{{- block "item" .}}
+			<li hx-get="/feeds/{{.feed_id}}/items/{{.id}}/expanded" hx-swap="outerHTML transition:true">
+				<img style="background-image: url('{{.image}}');">
+				<div class="items-baseline flow-root overflow-hidden">
+					<div class="xl:flex-row flex flex-col">
+						<div class="flex-initial pr-2 text-lg font-semibold truncate">{{.title | sanitizeHtml "strict" }}</div>
+						<div class="flex flex-row items-baseline flex-none">
+							<span class="flex-none pl-1 pr-1 text-sm text-gray-800">{{.feed_title | sanitizeHtml "strict" }}</span>·
+							<span class="flex-none pl-1 pr-1 text-sm text-gray-800">{{.author | sanitizeHtml "strict" }}</span>·
+							<span class="group/tip relative flex-none pl-1 text-sm text-gray-800">
+								<time datetime="{{.published}}">{{.published | humanize "time:2006-01-02T15:04:05Z07:00"}}</time>
+								<span class="group-hover/tip:visible left-full top-full mr-[-999px] -translate-x-full absolute invisible p-1 text-gray-200 bg-gray-800 rounded shadow-lg">
+									{{- .published | toDate "2006-01-02T15:04:05Z07:00" | date "Monday, 02 Jan 2006 15:04:05 MST" -}}
+								</span>
+							</span>
+						</div>
+					</div>
+					<p class="line-clamp-2 xl:line-clamp-3 text-gray-500">{{.description | abbrev 4000 | sanitizeHtml "strict"}}</p>
+				</div>
+			</li>
+			{{- end}}
+			{{- end}}
+			{{- $next_offset := add $offset 10}}
+			{{- if lt $next_offset $count}}
+			<li hx-trigger="intersect once" hx-swap="outerHTML"
+				hx-get="{{if $feed_id }}/feeds/{{$feed_id}}{{end}}/items?offset={{ $next_offset }}">(loading...)</li>
+			{{- end}}
+			{{- end}}
+		</ol>
+	</section>
+	{{- end}}
 </main>
-
-{{- define "GET /items"}}
-{{- template "items" .}}
-{{- template "perf" .}}
-{{- end}}
 
 {{- define "GET /feeds/:feed_id/"}}
 {{- if (.Req.Header.Get "HX-Request")}}
 {{- template "items-panel" .}}
+{{- template "perf" .}}
 {{- else}}
 {{- template "/index.html" .}}
 {{- end}}
+{{- end}}
+
+{{- define "GET /items"}}
+{{- template "items" .}}
 {{- end}}
 
 {{- define "GET /feeds/:feed_id/items"}}
@@ -127,30 +288,30 @@
 {{- $feed_id := .Params.ByName "feed_id" }}
 {{- $item_id := .Params.ByName "item_id" }}
 <li class="odd:bg-gray-100 show-item-transition flex flex-col max-h-full p-4 transition">
-  {{- with .QueryRow `SELECT feed_id, id, feed_title, title, link, image, author, published, categories, COALESCE(data ->> '$.content', data ->> '$.description', '') AS content FROM v_item WHERE feed_id = $1 AND id = $2` $feed_id $item_id }}
-  <div class="flex flex-row flex-none gap-2 cursor-pointer" hx-get="/feeds/{{$feed_id}}/items/{{$item_id}}/" hx-swap="outerHTML transition:true" hx-target="closest li">
-    <div class="flex-none w-[6em] h-[6em] m-1 bg-cover rounded" style="background-image: url('{{.image}}');"></div>
-    <div class="items-baseline flow-root overflow-hidden">
-      <div class="flex flex-col">
-        <div class="flex-initial text-2xl font-semibold truncate"><a href="{{.link}}" target="_blank" rel="nofollow noopener">{{.title | sanitizeHtml "strict"}} ⧉</a></div>
-        <div class="flex flex-row items-baseline flex-none">
-          <div class="flex-none pl-1 pr-1 text-sm text-gray-800">{{.feed_title | sanitizeHtml "strict"}}</div>·
-          <div class="flex-none pl-1 pr-1 text-sm text-gray-800">{{.author | sanitizeHtml "strict"}}</div>·
-          <div class="group/tip relative flex-none pl-1 text-sm text-gray-800">
-            <time datetime="{{.published}}">{{.published | humanize "time:2006-01-02T15:04:05Z07:00"}}</time>
-            <span class="group-hover/tip:visible left-full top-full mr-[-999px] -translate-x-full absolute invisible p-1 text-gray-200 bg-gray-800 rounded shadow-lg">
-              {{- .published | toDate "2006-01-02T15:04:05Z07:00" | date "Monday, 02 Jan 2006 15:04:05 MST" -}}
-            </span>
-          </div>
-        </div>
-        <div class="mt-2">{{range (.categories | mustFromJson)}}<span class="text-sm p-1.5 m-1 rounded-lg bg-gray-300 whitespace-nowrap">{{.}}</span> {{end}}</div>
-      </div>
-    </div>
-  </div>
-  <article class="article-content max-w-4xl m-8">
-    {{- sanitizeHtml "externalugc" .content }}
-  </article>
-  {{- end}}
+	{{- with .QueryRow `SELECT feed_id, id, feed_title, title, link, image, author, published, categories, COALESCE(data ->> '$.content', data ->> '$.description', '') AS content FROM v_item WHERE feed_id = $1 AND id = $2` $feed_id $item_id }}
+	<div class="flex flex-row flex-none gap-2 cursor-pointer" hx-get="/feeds/{{$feed_id}}/items/{{$item_id}}/" hx-swap="outerHTML transition:true" hx-target="closest li">
+		<div class="flex-none w-[6em] h-[6em] m-1 bg-cover rounded" style="background-image: url('{{.image}}');"></div>
+		<div class="items-baseline flow-root overflow-hidden">
+			<div class="flex flex-col">
+				<div class="flex-initial text-2xl font-semibold truncate"><a href="{{.link}}" target="_blank" rel="nofollow noopener">{{.title | sanitizeHtml "strict"}} ⧉</a></div>
+				<div class="flex flex-row items-baseline flex-none">
+					<div class="flex-none pl-1 pr-1 text-sm text-gray-800">{{.feed_title | sanitizeHtml "strict"}}</div>·
+					<div class="flex-none pl-1 pr-1 text-sm text-gray-800">{{.author | sanitizeHtml "strict"}}</div>·
+					<div class="group/tip relative flex-none pl-1 text-sm text-gray-800">
+						<time datetime="{{.published}}">{{.published | humanize "time:2006-01-02T15:04:05Z07:00"}}</time>
+						<span class="group-hover/tip:visible left-full top-full mr-[-999px] -translate-x-full absolute invisible p-1 text-gray-200 bg-gray-800 rounded shadow-lg">
+							{{- .published | toDate "2006-01-02T15:04:05Z07:00" | date "Monday, 02 Jan 2006 15:04:05 MST" -}}
+						</span>
+					</div>
+				</div>
+				<div class="mt-2">{{range (.categories | mustFromJson)}}<span class="text-sm p-1.5 m-1 rounded-lg bg-gray-300 whitespace-nowrap">{{.}}</span> {{end}}</div>
+			</div>
+		</div>
+	</div>
+	<article class="article-content max-w-4xl m-8">
+		{{- sanitizeHtml "externalugc" .content }}
+	</article>
+	{{- end}}
 </li>
 {{- end}}
 

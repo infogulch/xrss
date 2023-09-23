@@ -20,8 +20,9 @@
 					nodes.push(...node.childNodes); // Also process children.
 					if (node.nodeName !== 'STYLE') continue; // Skip if not a <style>
 					if (!node.parentNode || node.parentNode?.nodeName === 'HEAD') continue // Skip if no parent. Don't style <head>
-					if (!('scoped' in node.dataset)) continue; // Skip if missing data-scoped indicator.
-					delete node.dataset.scopedCss; // Remove indicator to prevent future processing.
+					if (!('scoped' in node.dataset) && !node.hasAttribute('scoped')) continue; // Skip if missing scoped indicator.
+					delete node.dataset.scoped; // Remove indicator to prevent future processing.
+					node.removeAttribute('scoped');
 					var scopeId = node.parentNode.dataset.cssScope; // Get parent's current scope id if present
 					if (!scopeId) {
 						window.maxScopedCssId = scopeId = ++nextScopeId; // Increment scope id, expose the max as a window variable.

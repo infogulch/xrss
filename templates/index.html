@@ -14,30 +14,23 @@
 			:scope { @media (min-width: 768px) { flex: 1 1 0%; } }
 
 			:scope ol { padding: 0.5rem; }
+			:scope ol > li { background-color: white; }
 			:scope ol > li:nth-child(2n+1) { background-color: #F3F4F6; }
 
-			:scope li .preview { display: flex; padding: 0.5rem; flex-direction: row; gap: 0.5rem; cursor: pointer; height: 7.5em; }
-			:scope li .preview img { margin: 0.25rem; flex: none; border-radius: 0; object-fit: cover; width: 6em; height: 6em; }
-			:scope li .preview div { display: flow-root; overflow: hidden; }
-			:scope li .preview h3 {padding-right: 0.5rem; flex: 0 1 auto; font-size: 1.125rem; line-height: 1.75rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-			:scope li .preview p { color: #6B7280; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
-			:scope li .preview ul { display: flex; flex-direction: row; flex: none; align-items: baseline; }
-			:scope li .preview ul li { padding-right: 0.25rem; flex: none; font-size: 0.875rem; line-height: 1.25rem; color: #1F2937; }
-			:scope li .preview ul li + li { list-style-type: "·"; margin-left: 0.25rem; padding-left: 0.25rem; }
+			:scope li > div { display: flex; padding: 0.5rem; flex-direction: row; gap: 0.5rem; cursor: pointer; height: 7.5em; background-color: inherit; }
+			:scope li > div img { margin: 0.25rem; flex: none; border-radius: 0; object-fit: cover; width: 6em; height: 6em; }
+			:scope li > div div { display: flow-root; overflow: hidden; }
+			:scope li > div h3 {padding-right: 0.5rem; flex: 0 1 auto; font-size: 1.125rem; line-height: 1.75rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+			:scope li > div p { color: #6B7280; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+			:scope li > div ul { display: flex; flex-direction: row; flex: none; align-items: baseline; }
+			:scope li > div ul li { padding-right: 0.25rem; flex: none; font-size: 0.875rem; line-height: 1.25rem; color: #1F2937; }
+			:scope li > div ul li + li { list-style-type: "·"; margin-left: 0.25rem; padding-left: 0.25rem; }
+			:scope li > div dl { margin-top: 1rem; }
+			:scope li > div dt { display:inline; padding: 0.375rem; margin: 0.25rem; border-radius: 0.5rem; font-size: 0.875rem; line-height: 1.25rem; white-space: nowrap; background-color: #D1D5DB; }
 
-			:scope li .expanded { display: flex; padding: 1rem; flex-direction: column; max-height: 100%; }
-			:scope li .expanded { display: flex; flex-direction: row; flex: none; gap: 0.5rem; cursor: pointer; }
-			:scope li .expanded img { margin: 0.25rem; flex: none; border-radius: 0; object-fit: cover; width: 6em; height: 6em; }
-			:scope li .expanded div { display: flow-root; overflow: hidden; }
-			:scope li .expanded h3 {padding-right: 0.5rem; flex: 0 1 auto; font-size: 1.125rem; line-height: 1.75rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-			:scope li .expanded p { color: #6B7280; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
-			:scope li .expanded ul { display: flex; flex-direction: row; flex: none; align-items: baseline; }
-			:scope li .expanded ul li { padding-right: 0.25rem; flex: none; font-size: 0.875rem; line-height: 1.25rem; color: #1F2937; }
-			:scope li .expanded ul li + li { list-style-type: "·"; margin-left: 0.25rem; padding-left: 0.25rem; }
-			:scope li .expanded dl { margin-top: 1rem; }
-			:scope li .expanded dt { display:inline; padding: 0.375rem; margin: 0.25rem; border-radius: 0.5rem; font-size: 0.875rem; line-height: 1.25rem; white-space: nowrap; background-color: #D1D5DB; }
+			:scope li .expanded { position: sticky; top: 3.5rem; }
 
-			:scope li article { margin: 2rem; max-width: 56rem; }
+			:scope li article { margin: 2rem; max-width: 56rem; padding: 1rem; }
 
 			:scope .tip { position: relative; }
 			:scope .tip span { visibility:hidden; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); margin-right: -999px; padding: 0.25rem; border-radius: 0.25rem; color: #E5E7EB; background-color: #1F2937; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
@@ -63,7 +56,7 @@
 			{{- range .QueryRows `SELECT feed_id, id, feed_title, title, description, image, author, published FROM v_item WHERE feed_id=$1 OR $1=0 ORDER BY published DESC LIMIT 10 OFFSET $2` $feed_id $offset }}
 			{{- block "item" .}}
 			<li>
-				<div class="preview" hx-get="/feeds/{{.feed_id}}/items/{{.id}}/expanded" hx-swap="outerHTMLtransition:true" hx-target="closest li">
+				<div hx-get="/feeds/{{.feed_id}}/items/{{.id}}/expanded" hx-swap="outerHTML transition:true" hx-target="closest li">
 					<img src="{{.image}}">
 					<div>
 						<h3>{{.title | sanitizeHtml "strict" }}</h3>
@@ -72,14 +65,14 @@
 							<li>{{.author | sanitizeHtml "strict" }}</li>
 							<li class="tip">
 								<time datetime="{{.published}}">{{.published | humanize "time:2006-01-02T15:04:05Z07:00"}}</time>
-								<span>
-									{{- .published | toDate "2006-01-02T15:04:05Z07:00" | date "Monday, 02 Jan 2006 15:04:05 MST" -}}
-								</span>
+								<span>{{- .published | toDate "2006-01-02T15:04:05Z07:00" | date "Monday, 02 Jan 2006 15:04:05 MST" -}}</span>
 							</li>
 						</ul>
-						<p>{{.description | abbrev 4000 | sanitizeHtml "strict"}}</p>
+						{{if .categories}}<dl>{{range (.categories | mustFromJson)}}<dt>{{.}}</dt>{{end}}</dl>{{end}}
+						{{if .description}}<p>{{.description | abbrev 4000 | sanitizeHtml "strict"}}</p>{{end}}
 					</div>
 				</div>
+				{{if .content}}<article>{{- sanitizeHtml "externalugc" .content }}</article>{{end}}
 			</li>
 			{{- end}}
 			{{- end}}
@@ -175,30 +168,8 @@
 {{- define "GET /feeds/:feed_id/items/:item_id/expanded"}}
 {{- $feed_id := .Params.ByName "feed_id" }}
 {{- $item_id := .Params.ByName "item_id" }}
-{{- with .QueryRow `SELECT feed_id, id, feed_title, title, link, image, author, published, categories, COALESCE(data ->> '$.content', data ->> '$.description', '') AS content FROM v_item WHERE feed_id = $1 AND id = $2` $feed_id $item_id }}
-<li>
-	<div class="expanded" hx-get="/feeds/{{$feed_id}}/items/{{$item_id}}/" hx-swap="outerHTML transition:true" hx-target="closest li">
-		<img src="{{.image}}">
-		<div>
-			<h3>{{.title | sanitizeHtml "strict" }}</h3>
-			<ul>
-				<li>{{.feed_title | sanitizeHtml "strict" }}</li>
-				<li>{{.author | sanitizeHtml "strict" }}</li>
-				<li class="tip">
-					<time datetime="{{.published}}">{{.published | humanize "time:2006-01-02T15:04:05Z07:00"}}</time>
-					<span>
-						{{- .published | toDate "2006-01-02T15:04:05Z07:00" | date "Monday, 02 Jan 2006 15:04:05 MST" -}}
-					</span>
-				</li>
-			</ul>
-			<dl>{{range (.categories | mustFromJson)}}<dt>{{.}}</dt>{{end}}</dl>
-		</div>
-	</div>
-	<article>
-		{{- sanitizeHtml "externalugc" .content }}
-	</article>
-	{{- end}}
-</li>
+{{- $item := .QueryRow `SELECT feed_id, id, feed_title, title, link, image, author, published, categories, content FROM v_item WHERE feed_id = $1 AND id = $2` $feed_id $item_id }}
+{{- template "item" $item}}
 {{- template "perf" .}}
 {{- end}}
 

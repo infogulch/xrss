@@ -3,113 +3,27 @@
 
 <main>
 	<style data-scoped>
-		:scope {
-			display: flex;
-			overflow-x: scroll;
-			background-color: #ffffff;
-			scroll-snap-type: x mandatory;
-			width: 100vw;
-			height: 100vh;
-			scrollbar-width: none;
-		}
+		:scope { display: flex; overflow-x: scroll; background-color: #ffffff; scroll-snap-type: x mandatory; width: 100vw; height: 100vh; scrollbar-width: none; }
 	</style>
 	<section id="feeds-panel">
 		<style data-scoped>
-			:scope {
-				display: flex;
-				overflow-y: auto;
-				padding: 0.5rem;
-				flex-direction: column;
-				flex-shrink: 0;
-				width: 100%;
-				height: 100%;
-				scroll-snap-align: start;
-				scrollbar-gutter: stable;
+			:scope { display: flex; overflow-y: auto; padding: 0.5rem; flex-direction: column; flex-shrink: 0; width: 100%; height: 100%; scroll-snap-align: start; scrollbar-gutter: stable; }
+			:scope { @media (min-width: 768px) { width: 16rem; } }
 
-				@media (min-width: 768px) {
-					width: 16rem;
-				}
-			}
+			:scope header { display: flex; margin-bottom: 1.5rem; }
+			:scope header span { padding: 0.75rem; border-radius: 0.5rem; font-size: 1.125rem; line-height: 1.75rem; text-align: center; color: #4B5563; background-color: #F3F4F6; }
+			:scope header button { right: 0; padding: 0.75rem; margin-left: auto; border-radius: 0.5rem; height: 100%; font-size: 1.125rem; line-height: 1.75rem; color: #4B5563; background-color: #F3F4F6; }
+			:scope header button { @media (min-width: 768px) { display: none; } }
 
-			:scope header {
-				display: flex;
-				margin-bottom: 1.5rem;
+			:scope li+li { margin-top: 0.25rem; }
+			:scope li { overflow: hidden; }
 
-				& span {
-					padding: 0.75rem;
-					border-radius: 0.5rem;
-					font-size: 1.125rem;
-					line-height: 1.75rem;
-					text-align: center;
-					color: #4B5563;
-					background-color: #F3F4F6;
-				}
+			:scope li a { display: flex; padding: 0.5rem 1rem; border-radius: 0.5rem; font-size: 0.875rem; line-height: 1.25rem; font-weight: 500; color: #374151; background-color: #F3F4F6; }
+			:scope li a img { margin-right: 0.25rem; width: 1.25rem; height: 1.25rem; }
+			:scope li a span { margin-right: 0.25rem; border-radius: 0.125rem; width: 1.25rem; height: 1.25rem; font-family: Georgia, Cambria, "Times New Roman", Times, serif; font-weight: 700; text-align: center; background-color: #1F2937; }
 
-				& button {
-					right: 0;
-					padding: 0.75rem;
-					margin-left: auto;
-					border-radius: 0.5rem;
-					height: 100%;
-					font-size: 1.125rem;
-					line-height: 1.75rem;
-					color: #4B5563;
-					background-color: #F3F4F6;
-
-					@media (min-width: 768px) {
-						display: none;
-					}
-				}
-			}
-
-			:scope ol {
-				& li+li {
-					margin-top: 0.25rem;
-				}
-
-				& li {
-					overflow: hidden;
-
-					& a {
-						display: flex;
-						padding: 0.5rem 1rem;
-						border-radius: 0.5rem;
-						font-size: 0.875rem;
-						line-height: 1.25rem;
-						font-weight: 500;
-						color: #374151;
-						background-color: #F3F4F6;
-
-						& img {
-							margin-right: 0.25rem;
-							width: 1.25rem;
-							height: 1.25rem;
-						}
-
-						& span {
-							margin-right: 0.25rem;
-							border-radius: 0.125rem;
-							width: 1.25rem;
-							height: 1.25rem;
-							font-family: Georgia, Cambria, "Times New Roman", Times, serif;
-							font-weight: 700;
-							text-align: center;
-							background-color: #1F2937;
-						}
-					}
-				}
-			}
-
-			:scope footer {
-				right: 0;
-				left: 0;
-				bottom: 0;
-				margin-top: auto;
-
-				& input {
-					width: 100%;
-				}
-			}
+			:scope footer { right: 0; left: 0; bottom: 0; margin-top: auto; }
+			:scope input { width: 100%; }
 		</style>
 		<header>
 			<span>XRss</span>
@@ -148,112 +62,66 @@
 	{{- $feed_id := int (.Params.ByName "feed_id") }}
 	<section id="items-panel">
 		<style data-scoped>
-			:scope {
-				flex-shrink: 0;
-				width: 100%;
-				min-width: 0;
-				height: 100%;
-				scroll-snap-align: start;
-				scrollbar-gutter: stable;
+			:scope { flex-shrink: 0; width: 100%; min-width: 0; height: 100%; scroll-snap-align: start; scrollbar-gutter: stable; }
+			:scope { @media (min-width: 768px) { flex: 1 1 0%; } }
 
-				@media (min-width: 768px) {
-					flex: 1 1 0%;
-				}
-			}
+			:scope ol { padding: 0.5rem; }
+			:scope ol > li:nth-child(2n+1) { background-color: #F3F4F6; }
 
-			:scope header {
-				display: flex;
-				position: sticky;
-				top: 0;
-				z-index: 20;
-				padding: 0.5rem;
-				padding-bottom: 0.5rem;
-				gap: 0.5rem;
-				width: 100%;
-				background-color: #ffffff;
+			:scope li.preview { display: flex; padding: 0.5rem; flex-direction: row; gap: 0.5rem; cursor: pointer; height: 7.5em; }
+			:scope li.preview img { margin: 0.25rem; flex: none; border-radius: 0; object-fit: cover; width: 6em; height: 6em; }
+			:scope li.preview div { display: flow-root; overflow: hidden; }
+			:scope li.preview h3 {padding-right: 0.5rem; flex: 0 1 auto; font-size: 1.125rem; line-height: 1.75rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+			:scope li.preview p { color: #6B7280; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+			:scope li.preview ul.meta { display: flex; flex-direction: row; flex: none; align-items: baseline; }
+			:scope li.preview ul.meta li { padding-right: 0.25rem; flex: none; font-size: 0.875rem; line-height: 1.25rem; color: #1F2937; }
+			:scope li.preview ul.meta li + li { list-style-type: "·"; margin-left: 0.25rem; padding-left: 0.25rem; }
 
-				& * {
-					padding: 0.75rem;
-					border-radius: 0.5rem;
-					height: 100%;
-					font-size: 1.125rem;
-					line-height: 1.75rem;
-					color: #4B5563;
-					background-color: #F3F4F6;
-				}
-
-				& .mobile {
-					@media (min-width: 768px) {
-						display: none;
-					}
-				}
-			}
-
-			:scope ol {
-				padding: 0.5rem;
-
-				& li:nth-child(2n+1) {
-					background-color: #F3F4F6;
-				}
-
-				& li {
-					display: flex;
-					padding: 0.5rem;
-					flex-direction: row;
-					gap: 0.5rem;
-					cursor: pointer;
-					height: 7.5em;
-
-					& img {
-						margin: 0.25rem;
-						flex: none;
-						border-radius: 0;
-						background-size: cover;
-						width: 6em;
-						height: 6em;
-					}
-				}
-			}
+			:scope .tip { position: relative; }
+			:scope .tip span { visibility:hidden; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); margin-right: -999px; padding: 0.25rem; border-radius: 0.25rem; color: #E5E7EB; background-color: #1F2937; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+			:scope .tip:hover span { visibility:visible; }
 		</style>
 		<header>
+			<style data-scoped>
+				:scope { display: flex; position: sticky; top: 0; padding: 0.5rem; z-index: 20; gap: 0.5rem; width: 100%; background-color: #ffffff; }
+				:scope * { border-radius: 0.5rem; height: 100%; padding: 0.75rem; font-size: 1.125rem; line-height: 1.75rem; color: #4B5563; background-color: #F3F4F6; }
+				:scope .mobile { @media (min-width: 768px) { display: none; } }
+			</style>
 			<button class="mobile" onclick="scrollElementIntoView('#feeds-panel')">&nbsp;⇌&nbsp;</button>
-			<span>{{.QueryVal `SELECT COALESCE((SELECT title FROM v_feed WHERE id=$1), 'All Feeds')` $feed_id}}</span>
+			<h2>{{.QueryVal `SELECT COALESCE((SELECT title FROM v_feed WHERE id=$1), 'All Feeds')` $feed_id}}</h2>
 			{{- if and (ne $feed_id 0) (not .Config.read_only)}}
 			<button hx-post="/feeds/{{$feed_id}}/refresh" hx-target="#items-panel" hx-swap="outerHTML scroll:top">⟳</button>
 			{{- end}}
 		</header>
-		<ol id="items" class="p-2">
+		<ol id="items">
 			{{- block "items" .}}
 			{{- $feed_id := int (.Params.ByName "feed_id") }}
 			{{- $offset := int (.Req.URL.Query.Get "offset") }}
 			{{- $count := .QueryVal `SELECT COUNT(*) FROM v_item WHERE feed_id=$1 OR $1=0` $feed_id}}
 			{{- range .QueryRows `SELECT feed_id, id, feed_title, title, description, image, author, published FROM v_item WHERE feed_id=$1 OR $1=0 ORDER BY published DESC LIMIT 10 OFFSET $2` $feed_id $offset }}
 			{{- block "item" .}}
-			<li hx-get="/feeds/{{.feed_id}}/items/{{.id}}/expanded" hx-swap="outerHTML transition:true">
-				<img style="background-image: url('{{.image}}');">
-				<div class="items-baseline flow-root overflow-hidden">
-					<div class="xl:flex-row flex flex-col">
-						<div class="flex-initial pr-2 text-lg font-semibold truncate">{{.title | sanitizeHtml "strict" }}</div>
-						<div class="flex flex-row items-baseline flex-none">
-							<span class="flex-none pl-1 pr-1 text-sm text-gray-800">{{.feed_title | sanitizeHtml "strict" }}</span>·
-							<span class="flex-none pl-1 pr-1 text-sm text-gray-800">{{.author | sanitizeHtml "strict" }}</span>·
-							<span class="group/tip relative flex-none pl-1 text-sm text-gray-800">
-								<time datetime="{{.published}}">{{.published | humanize "time:2006-01-02T15:04:05Z07:00"}}</time>
-								<span class="group-hover/tip:visible left-full top-full mr-[-999px] -translate-x-full absolute invisible p-1 text-gray-200 bg-gray-800 rounded shadow-lg">
-									{{- .published | toDate "2006-01-02T15:04:05Z07:00" | date "Monday, 02 Jan 2006 15:04:05 MST" -}}
-								</span>
+			<li class="preview" hx-get="/feeds/{{.feed_id}}/items/{{.id}}/expanded" hx-swap="outerHTML transition:true">
+				<img src="{{.image}}">
+				<div>
+					<h3>{{.title | sanitizeHtml "strict" }}</h3>
+					<ul class="meta">
+						<li>{{.feed_title | sanitizeHtml "strict" }}</li>
+						<li>{{.author | sanitizeHtml "strict" }}</li>
+						<li class="tip">
+							<time datetime="{{.published}}">{{.published | humanize "time:2006-01-02T15:04:05Z07:00"}}</time>
+							<span>
+								{{- .published | toDate "2006-01-02T15:04:05Z07:00" | date "Monday, 02 Jan 2006 15:04:05 MST" -}}
 							</span>
-						</div>
-					</div>
-					<p class="line-clamp-2 xl:line-clamp-3 text-gray-500">{{.description | abbrev 4000 | sanitizeHtml "strict"}}</p>
+						</li>
+					</ul>
+					<p>{{.description | abbrev 4000 | sanitizeHtml "strict"}}</p>
 				</div>
 			</li>
 			{{- end}}
 			{{- end}}
 			{{- $next_offset := add $offset 10}}
 			{{- if lt $next_offset $count}}
-			<li hx-trigger="intersect once" hx-swap="outerHTML"
-				hx-get="{{if $feed_id }}/feeds/{{$feed_id}}{{end}}/items?offset={{ $next_offset }}">(loading...)</li>
+			<li hx-trigger="intersect once" hx-swap="outerHTML" hx-get="{{if $feed_id }}/feeds/{{$feed_id}}{{end}}/items?offset={{ $next_offset }}">(loading...)</li>
 			{{- end}}
 			{{- end}}
 		</ol>

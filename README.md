@@ -56,3 +56,7 @@ Responsive layout demo: https://play.tailwindcss.com/KJTJ5n574r
 https://github.com/caddyserver/xcaddy/pull/62
 
 https://classless.de/classless.css
+
+https://smolcss.dev/
+
+https://moderncss.dev/

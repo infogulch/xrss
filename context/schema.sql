@@ -110,7 +110,7 @@ CREATE VIEW v_item AS
     data ->> '$.authors[0].name' AS author,
     COALESCE(data -> '$.categories', '[]') AS categories,
     feed.title AS feed_title,
-    COALESCE(data ->> '$.content', data ->> '$.description', '') AS content
+    COALESCE(data ->> '$.content', data ->> '$.description', '') AS content,
     data
   FROM
     item

@@ -53,10 +53,10 @@
 			{{- $feed_id := int (.Params.ByName "feed_id") }}
 			{{- $offset := int (.Req.URL.Query.Get "offset") }}
 			{{- $count := .QueryVal `SELECT COUNT(*) FROM v_item WHERE feed_id=$1 OR $1=0` $feed_id}}
-			{{- range .QueryRows `SELECT feed_id, id, feed_title, title, description, image, author, published FROM v_item WHERE feed_id=$1 OR $1=0 ORDER BY published DESC LIMIT 10 OFFSET $2` $feed_id $offset }}
+			{{- range .QueryRows `SELECT feed_id, id, feed_title, title, description, image, author, published, 'expanded' AS expanded FROM v_item WHERE feed_id=$1 OR $1=0 ORDER BY published DESC LIMIT 10 OFFSET $2` $feed_id $offset }}
 			{{- block "item" .}}
 			<li>
-				<div hx-get="/feeds/{{.feed_id}}/items/{{.id}}/expanded" hx-swap="outerHTML transition:true" hx-target="closest li">
+				<div hx-get="/feeds/{{.feed_id}}/items/{{.id}}/{{.expanded}}" hx-swap="outerHTML transition:true" hx-target="closest li">
 					<img src="{{.image}}">
 					<div>
 						<h3>{{.title | sanitizeHtml "strict" }}</h3>
@@ -160,7 +160,7 @@
 {{- end}}
 
 {{- define "GET /feeds/:feed_id/items/:item_id/"}}
-{{- $item := .QueryRow `SELECT feed_id, id, feed_title, title, description, image, author, published FROM v_item WHERE feed_id=$1 AND id=$2` (.Params.ByName "feed_id") (.Params.ByName "item_id") }}
+{{- $item := .QueryRow `SELECT feed_id, id, feed_title, title, description, image, author, published, 'expanded' AS expanded FROM v_item WHERE feed_id=$1 AND id=$2` (.Params.ByName "feed_id") (.Params.ByName "item_id") }}
 {{- template "item" $item}}
 {{- template "perf" .}}
 {{- end}}
@@ -168,7 +168,7 @@
 {{- define "GET /feeds/:feed_id/items/:item_id/expanded"}}
 {{- $feed_id := .Params.ByName "feed_id" }}
 {{- $item_id := .Params.ByName "item_id" }}
-{{- $item := .QueryRow `SELECT feed_id, id, feed_title, title, link, image, author, published, categories, content FROM v_item WHERE feed_id = $1 AND id = $2` $feed_id $item_id }}
+{{- $item := .QueryRow `SELECT feed_id, id, feed_title, title, link, image, author, published, categories, content, '' AS expanded FROM v_item WHERE feed_id = $1 AND id = $2` $feed_id $item_id }}
 {{- template "item" $item}}
 {{- template "perf" .}}
 {{- end}}

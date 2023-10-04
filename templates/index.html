@@ -2,50 +2,55 @@
 <title>Home</title>
 
 <main>
-	<style data-scoped>
-		:scope { display: flex; flex-direction: row-reverse; overflow-x: scroll; background-color: #ffffff; scroll-snap-type: x mandatory; width: 100vw; height: 100vh; scrollbar-width: none; }
+	<style>
+		me { display: flex; flex-direction: row-reverse; overflow-x: scroll; background-color: #ffffff; scroll-snap-type: x mandatory; width: 100vw; height: 100vh; scrollbar-width: none; }
 	</style>
 
 	{{- block "items-panel" .}}
 	{{- $feed_id := int (.Params.ByName "feed_id") }}
 	<section id="items-panel">
-		<style data-scoped>
-			:scope { flex-shrink: 0; width: 100%; min-width: 0; height: 100%; scroll-snap-align: start; scrollbar-gutter: stable; }
-			:scope { @media (min-width: 768px) { flex: 1 1 0%; } }
+		<style>
+			me { flex-shrink: 0; width: 100%; min-width: 0; height: 100%; scroll-snap-align: start; scrollbar-gutter: stable; }
+			me { @media (min-width: 768px) { flex: 1 1 0%; } }
 
-			:scope ol { padding: 0.5rem; }
-			:scope ol > li { background-color: white; }
-			:scope ol > li:nth-child(2n+1) { background-color: #F3F4F6; }
+			me ol { padding: 0.5rem; }
+			me ol > li { background-color: white; }
+			me ol > li:nth-child(2n+1) { background-color: #F3F4F6; }
 
-			:scope li > div { display: flex; padding: 0.5rem; flex-direction: row; gap: 0.5rem; cursor: pointer; height: 7.5em; background-color: inherit; }
-			:scope li > div img { margin: 0.25rem; flex: none; border-radius: 0; object-fit: cover; width: 6em; height: 6em; }
-			:scope li > div div { display: flow-root; overflow: hidden; }
-			:scope li > div h3 {padding-right: 0.5rem; flex: 0 1 auto; font-size: 1.125rem; line-height: 1.75rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-			:scope li > div p { color: #6B7280; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
-			:scope li > div ul { display: flex; flex-direction: row; flex: none; align-items: baseline; }
-			:scope li > div ul li { padding-right: 0.25rem; flex: none; font-size: 0.875rem; line-height: 1.25rem; color: #1F2937; }
-			:scope li > div ul li + li { list-style-type: "·"; margin-left: 0.25rem; padding-left: 0.25rem; }
-			:scope li > div dl { margin-top: 1rem; }
-			:scope li > div dt { display:inline; padding: 0.375rem; margin: 0.25rem; border-radius: 0.5rem; font-size: 0.875rem; line-height: 1.25rem; white-space: nowrap; background-color: #D1D5DB; }
+			me li > div { display: flex; padding: 0.5rem; flex-direction: row; gap: 0.5rem; cursor: pointer; height: 7.5em; background-color: inherit; }
+			me li > div img { margin: 0.25rem; flex: none; border-radius: 0; object-fit: cover; width: 6em; height: 6em; }
+			me li > div div { display: flow-root; overflow: hidden; }
+			me li > div h3 {padding-right: 0.5rem; flex: 0 1 auto; font-size: 1.125rem; line-height: 1.75rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+			me li > div h3 a::after { content: ' ⧉' }
+			me li > div p { color: #6B7280; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+			me li > div ul { display: flex; flex-direction: row; align-items: baseline; }
+			me li > div ul li { padding-right: 0.25rem; font-size: 0.875rem; line-height: 1.25rem; color: #1F2937; }
+			me li > div ul li + li { list-style-type: "·"; margin-left: 0.25rem; padding-left: 0.25rem; }
+			me li > div dl { margin-top: 1rem; }
+			me li > div dt { display:inline; padding: 0.375rem; margin: 0.25rem; border-radius: 0.5rem; font-size: 0.875rem; line-height: 1.25rem; white-space: nowrap; background-color: #D1D5DB; }
 
-			:scope li .expanded { position: sticky; top: 3.5rem; }
+			me li .expanded { position: sticky; top: 3.5rem; }
 
-			:scope li article { margin: 2rem; max-width: 56rem; padding: 1rem; }
+			me li article { margin: 2rem; max-width: 56rem; padding: 1rem; }
 
-			:scope .tip { position: relative; }
-			:scope .tip span { visibility:hidden; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); margin-right: -999px; padding: 0.25rem; border-radius: 0.25rem; color: #E5E7EB; background-color: #1F2937; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
-			:scope .tip:hover span { visibility:visible; }
+			me .tip { position: relative; }
+			me .tip span { visibility:hidden; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); margin-right: -999px; padding: 0.25rem; border-radius: 0.25rem; color: #E5E7EB; background-color: #1F2937; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+			me .tip:hover span { visibility:visible; }
 		</style>
 		<header>
-			<style data-scoped>
-				:scope { display: flex; position: sticky; top: 0; padding: 0.5rem; z-index: 20; gap: 0.5rem; width: 100%; background-color: #ffffff; }
-				:scope * { border-radius: 0.5rem; height: 100%; padding: 0.75rem; font-size: 1.125rem; line-height: 1.75rem; color: #4B5563; background-color: #F3F4F6; }
-				:scope .mobile { @media (min-width: 768px) { display: none; } }
+			<style>
+				me { display: flex; position: sticky; top: 0; padding: 0.5rem; z-index: 20; gap: 0.5rem; width: 100%; background-color: #ffffff; }
+				me * { border-radius: 0.5rem; height: 100%; padding: 0.75rem; font-size: 1.125rem; line-height: 1.75rem; color: #4B5563; background-color: #F3F4F6; }
+				me .mobile { @media (min-width: 768px) { display: none; } }
+				me a { margin-left: auto; }
 			</style>
 			<button class="mobile" onclick="scrollElementIntoView('#feeds-panel')">&nbsp;⇌&nbsp;</button>
 			<h2>{{.QueryVal `SELECT COALESCE((SELECT title FROM v_feed WHERE id=$1), 'All Feeds')` $feed_id}}</h2>
-			{{- if and (ne $feed_id 0) (not .Config.read_only)}}
-			<button hx-post="/feeds/{{$feed_id}}/refresh" hx-target="#items-panel" hx-swap="outerHTML scroll:top">⟳</button>
+			{{- if .Req.Header.Get "Remote-User"}}
+			{{- if ne $feed_id 0}}<button hx-post="/feeds/{{$feed_id}}/refresh" hx-target="#items-panel" hx-swap="outerHTML scroll:top">⟳</button>{{end}}
+			<div>{{.Req.Header.Get "Remote-User"}}</div>
+			{{- else}}
+			<a href="{{.Req.Header.Get `Remote-Auth-Url`}}">Log in</a>
 			{{- end}}
 		</header>
 		<ol id="items">
@@ -53,26 +58,27 @@
 			{{- $feed_id := int (.Params.ByName "feed_id") }}
 			{{- $offset := int (.Req.URL.Query.Get "offset") }}
 			{{- $count := .QueryVal `SELECT COUNT(*) FROM v_item WHERE feed_id=$1 OR $1=0` $feed_id}}
-			{{- range .QueryRows `SELECT feed_id, id, feed_title, title, description, image, author, published, 0 AS expanded FROM v_item WHERE feed_id=$1 OR $1=0 ORDER BY published DESC LIMIT 10 OFFSET $2` $feed_id $offset }}
+			{{- range .QueryRows `SELECT feed_id, id, feed_title, title, link, description, image, author, published, 0 AS expanded FROM v_item WHERE feed_id=$1 OR $1=0 ORDER BY published DESC LIMIT 10 OFFSET $2` $feed_id $offset }}
 			{{- block "item" .}}
 			<li>
 				<div hx-get="/feeds/{{.feed_id}}/items/{{.id}}/{{if not .expanded}}expanded{{end}}" hx-swap="outerHTML transition:true" hx-target="closest li">
 					<img src="{{.image}}">
 					<div>
-						<h3>{{.title | sanitizeHtml "strict" }}</h3>
+						{{- $title := .title | sanitizeHtml "strict" -}}
+						<h3>{{if .expanded}}<a href="{{.link}}" target="_blank" rel="nofollow noopener">{{$title}}</a>{{else}}{{$title}}{{end}}</h3>
 						<ul>
 							<li>{{.feed_title | sanitizeHtml "strict" }}</li>
 							<li>{{.author | sanitizeHtml "strict" }}</li>
 							<li class="tip">
 								<time datetime="{{.published}}">{{.published | humanize "time:2006-01-02T15:04:05Z07:00"}}</time>
-								<span>{{- .published | toDate "2006-01-02T15:04:05Z07:00" | date "Monday, 02 Jan 2006 15:04:05 MST" -}}</span>
+								<span>{{.published | toDate "2006-01-02T15:04:05Z07:00" | date "Monday, 02 Jan 2006 15:04:05 MST"}}</span>
 							</li>
 						</ul>
 						{{if .categories}}<dl>{{range (.categories | mustFromJson)}}<dt>{{.}}</dt>{{end}}</dl>{{end}}
 						{{if .description}}<p>{{.description | abbrev 4000 | sanitizeHtml "strict"}}</p>{{end}}
 					</div>
 				</div>
-				{{if .content}}<article>{{- sanitizeHtml "externalugc" .content }}</article>{{end}}
+				{{if .content}}<article>{{sanitizeHtml "externalugc" .content}}</article>{{end}}
 			</li>
 			{{- end}}
 			{{- end}}
@@ -87,24 +93,24 @@
 
 	<!-- render feeds panel last + main flex-direction: row-reverse so #perf renders after all queries. yes that's kinda quirky. -->
 	<section id="feeds-panel">
-		<style data-scoped>
-			:scope { display: flex; overflow-y: auto; padding: 0.5rem; flex-direction: column; flex-shrink: 0; width: 100%; height: 100%; scroll-snap-align: start; scrollbar-gutter: stable; }
-			:scope { @media (min-width: 768px) { width: 16rem; } }
+		<style>
+			me { display: flex; overflow-y: auto; padding: 0.5rem; flex-direction: column; flex-shrink: 0; width: 100%; height: 100%; scroll-snap-align: start; scrollbar-gutter: stable; }
+			me { @media (min-width: 768px) { width: 16rem; } }
 
-			:scope header { display: flex; margin-bottom: 1.5rem; }
-			:scope header span { padding: 0.75rem; border-radius: 0.5rem; font-size: 1.125rem; line-height: 1.75rem; text-align: center; color: #4B5563; background-color: #F3F4F6; }
-			:scope header button { right: 0; padding: 0.75rem; margin-left: auto; border-radius: 0.5rem; height: 100%; font-size: 1.125rem; line-height: 1.75rem; color: #4B5563; background-color: #F3F4F6; }
-			:scope header button { @media (min-width: 768px) { display: none; } }
+			me header { display: flex; margin-bottom: 1.5rem; }
+			me header span { padding: 0.75rem; border-radius: 0.5rem; font-size: 1.125rem; line-height: 1.75rem; text-align: center; color: #4B5563; background-color: #F3F4F6; }
+			me header button { right: 0; padding: 0.75rem; margin-left: auto; border-radius: 0.5rem; height: 100%; font-size: 1.125rem; line-height: 1.75rem; color: #4B5563; background-color: #F3F4F6; }
+			me header button { @media (min-width: 768px) { display: none; } }
 
-			:scope li+li { margin-top: 0.25rem; }
-			:scope li { overflow: hidden; }
+			me li+li { margin-top: 0.25rem; }
+			me li { overflow: hidden; }
 
-			:scope li a { display: flex; padding: 0.5rem 1rem; border-radius: 0.5rem; font-size: 0.875rem; line-height: 1.25rem; font-weight: 500; color: #374151; background-color: #F3F4F6; }
-			:scope li a img { margin-right: 0.25rem; width: 1.25rem; height: 1.25rem; }
-			:scope li a span { margin-right: 0.25rem; border-radius: 0.125rem; width: 1.25rem; height: 1.25rem; font-family: Georgia, Cambria, "Times New Roman", Times, serif; font-weight: 700; text-align: center; background-color: #1F2937; }
+			me li a { display: flex; padding: 0.5rem 1rem; border-radius: 0.5rem; font-size: 0.875rem; line-height: 1.25rem; font-weight: 500; color: #374151; background-color: #F3F4F6; }
+			me li a img { margin-right: 0.25rem; width: 1.25rem; height: 1.25rem; }
+			me li a span { margin-right: 0.25rem; border-radius: 0.125rem; width: 1.25rem; height: 1.25rem; font-family: Georgia, Cambria, "Times New Roman", Times, serif; font-weight: 700; text-align: center; background-color: #1F2937; }
 
-			:scope footer { right: 0; left: 0; bottom: 0; margin-top: auto; }
-			:scope input { width: 100%; }
+			me footer { right: 0; left: 0; bottom: 0; margin-top: auto; }
+			me input { width: 100%; }
 		</style>
 		<header>
 			<span>XRss</span>

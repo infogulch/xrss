@@ -35,10 +35,6 @@ tailwindcss -i static/main.css -o static/site.css --content './templates/**/*' -
 
 ## Resources
 
-https://tailwindcss.com/docs/
-
-https://www.hyperui.dev/
-
 https://hurl.dev/docs/hurl-file.html
 
 https://github.com/go-echarts/go-echarts
@@ -49,14 +45,19 @@ https://github.com/cornelk/goscrape
 
 https://github.com/robfig/cron
 
-Responsive layout demo: https://play.tailwindcss.com/KJTJ5n574r
-
 7 Restful Routes: https://gist.github.com/alexpchin/09939db6f81d654af06b
 
 https://github.com/caddyserver/xcaddy/pull/62
 
-https://classless.de/classless.css
+https://github.com/infogulch/xrss/commits/master.atom
 
-https://smolcss.dev/
+### CSS
 
-https://moderncss.dev/
+* https://smolcss.dev/
+* https://moderncss.dev/
+* https://purifycss.online/
+* https://modernfontstacks.com/
+* https://classless.de/classless.css
+* https://tailwindcss.com/docs/
+* https://www.hyperui.dev/
+* Responsive layout demo: https://play.tailwindcss.com/KJTJ5n574r

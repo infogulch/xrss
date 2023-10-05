@@ -38,7 +38,8 @@
 				me li > div img { margin: 0.25rem; flex: none; border-radius: 0; object-fit: cover; width: 6em; height: 6em; }
 				me li > div div { display: flow-root; overflow: hidden; }
 				me li > div h3 {padding-right: 0.5rem; flex: 0 1 auto; font-size: 1.125rem; line-height: 1.75rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-				me li > div h3 a::after { content: ' ⧉' }
+				me li > div h3 a::after { margin-left: .5rem; display: inline-block; width: .75rem; height: .75rem; background-image: var(--external-link-icon); }
+				me li > div h3 a:hover { text-decoration: underline; }
 				me li > div p { color: #6B7280; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
 				me li > div ul { display: flex; flex-direction: row; align-items: baseline; }
 				me li > div ul li { padding-right: 0.25rem; font-size: 0.875rem; line-height: 1.25rem; color: #1F2937; }

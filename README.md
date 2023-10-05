@@ -53,11 +53,13 @@ https://github.com/infogulch/xrss/commits/master.atom
 
 ### CSS
 
-* https://smolcss.dev/
+* https://css-tricks.com/
 * https://moderncss.dev/
-* https://purifycss.online/
+* https://smolcss.dev/
 * https://modernfontstacks.com/
+
 * https://classless.de/classless.css
+* https://purifycss.online/
 * https://tailwindcss.com/docs/
 * https://www.hyperui.dev/
 * Responsive layout demo: https://play.tailwindcss.com/KJTJ5n574r

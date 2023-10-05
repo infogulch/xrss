@@ -1,0 +1,20 @@
+:root {
+	/* https://modernfontstacks.com/ */
+	--font-system: system-ui, sans-serif;
+	--font-transitional: Charter, 'Bitstream Charter', 'Sitka Text', Cambria, serif;
+	--font-old: 'Iowan Old Style', 'Palatino Linotype', 'URW Palladio L', P052, serif;
+	--font-humanist: Seravek, 'Gill Sans Nova', Ubuntu, Calibri, 'DejaVu Sans', source-sans-pro, sans-serif;
+	--font-geo-humanist: Avenir, Montserrat, Corbel, 'URW Gothic', source-sans-pro, sans-serif;
+	--font-classical-humanist: Optima, Candara, 'Noto Sans', source-sans-pro, sans-serif;
+	--font-neo-grotesque: Inter, Roboto, 'Helvetica Neue', 'Arial Nova', 'Nimbus Sans', Arial, sans-serif;
+	--font-monospace-slab: 'Nimbus Mono PS', 'Courier New', monospace;
+	--font-monospace-code: font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, 'DejaVu Sans Mono', monospace;
+	--font-industrial: Bahnschrift, 'DIN Alternate', 'Franklin Gothic Medium', 'Nimbus Sans Narrow', sans-serif-condensed, sans-serif;
+	--font-rounded-sans: ui-rounded, 'Hiragino Maru Gothic ProN', Quicksand, Comfortaa, Manjari, 'Arial Rounded MT', 'Arial Rounded MT Bold', Calibri, source-sans-pro, sans-serif;
+	--font-slab-serif: Rockwell, 'Rockwell Nova', 'Roboto Slab', 'DejaVu Serif', 'Sitka Small', serif;
+	--font-antique: Superclarendon, 'Bookman Old Style', 'URW Bookman', 'URW Bookman L', 'Georgia Pro', Georgia, serif;
+	--font-didone: Didot, 'Bodoni MT', 'Noto Serif Display', 'URW Palladio L', P052, Sylfaen, serif;
+	--font-handwritten: 'Segoe Print', 'Bradley Hand', Chilanka, TSCu_Comic, casual, cursive;
+
+	--external-link-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 9'%3E%3Cpath d='M0 0H5v1h2.3l-3.7 3.7.7.7 3.7-3.7v2.3h1v-4zM8 8H1v-7h2v-1H0v9h9v-3H8z' fill='%23000'/%3E%3C/svg%3E");
+}

@@ -6,3 +6,4 @@ node_modules
 .env
 users.json
 Caddyfile2
+go.work*

@@ -184,7 +184,8 @@
 
 {{- define "POST /feeds"}}
 {{- if .Config.read_only}}
-{{- httpError 403 }}
+{{- call .RespStatus 403 }}
+{{- return }}
 {{- end}}
 {{- $url := .Req.PostForm.feedurl | idx 0}}
 {{- $feed_id := (.Exec `INSERT INTO feed(url) VALUES(($1))` $url).LastInsertId }}
@@ -194,7 +195,8 @@
 
 {{- define "POST /feeds/:feed_id/refresh"}}
 {{- if .Config.read_only}}
-{{- httpError 403 }}
+{{- call .RespStatus 403 }}
+{{- return }}
 {{- end}}
 {{- template "fetch_feed" .WithVars (dict "feed_id" (.Params.ByName "feed_id")) }}
 {{- template "GET /feeds/:feed_id/" .}}
@@ -208,6 +210,6 @@
 {{- $result := .Exec `INSERT INTO ingest(feed_id, data) VALUES ($1, $2)` $feed_id (toJson $response.Value) }}
 {{- else }}
 Failed to fetch rss feed: {{$response.Error}}
-{{- httpError 502 }}
+{{- call .RespStatus 502 }}
 {{- end}}
 {{- end}}

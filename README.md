@@ -26,9 +26,11 @@ Future
 ## Developing
 
 ```
-GOFLAGS='-tags="sqlite_json"' CGO_ENABLED=1 xcaddy build --with github.com/infogulch/caddy-xtemplate --with github.com/greenpau/caddy-security --with github.com/infogulch/xrss
+# build with xcaddy:
+GOFLAGS='-tags="sqlite_json"' CGO_ENABLED=1 xcaddy build --with github.com/infogulch/xtemplate/caddy --with github.com/greenpau/caddy-security --with github.com/infogulch/xrss
 
-GOFLAGS='-tags="sqlite_json"' CGO_ENABLED=1 XCADDY_DEBUG=1 xcaddy build --with github.com/infogulch/caddy-xtemplate=../xtemplate --with github.com/infogulch/xrss=. --with github.com/greenpau/caddy-security
+# build for local development using xtemplate checked out next to xrss
+GOFLAGS='-tags="sqlite_json"' CGO_ENABLED=1 XCADDY_DEBUG=1 xcaddy build --with github.com/infogulch/xtemplate/caddy=../xtemplate/caddy  --with github.com/infogulch/xtemplate=../xtemplate --with github.com/infogulch/xrss=. --with github.com/greenpau/caddy-security
 
 tailwindcss -i static/main.css -o static/site.css --content './templates/**/*' -w
 ```
@@ -63,3 +65,5 @@ https://github.com/infogulch/xrss/commits/master.atom
 * https://tailwindcss.com/docs/
 * https://www.hyperui.dev/
 * Responsive layout demo: https://play.tailwindcss.com/KJTJ5n574r
+
+* https://yqnn.github.io/svg-path-editor/

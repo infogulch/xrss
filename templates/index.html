@@ -134,7 +134,7 @@
 				me input { width: 100%; }
 			</style>
 			{{- block "newfeed" .}}
-			{{- if not .Config.read_only}}
+			{{- if not .Config 'read_only'}}
 			<input type="text" id="feedurl" name="feedurl" placeholder="Add a new feed" value="" required
 				hx-post="/feeds" hx-target="#feeds-list" hx-swap="beforeend" />
 			{{- end}}
@@ -183,8 +183,8 @@
 {{- end}}
 
 {{- define "POST /feeds"}}
-{{- if .Config.read_only}}
-{{- call .RespStatus 403 }}
+{{- if .Config 'read_only'}}
+{{- .Status 403 }}
 {{- return }}
 {{- end}}
 {{- $url := .Req.PostForm.feedurl | idx 0}}
@@ -194,8 +194,8 @@
 {{- end}}
 
 {{- define "POST /feeds/:feed_id/refresh"}}
-{{- if .Config.read_only}}
-{{- call .RespStatus 403 }}
+{{- if .Config 'read_only'}}
+{{- .Status 403 }}
 {{- return }}
 {{- end}}
 {{- template "fetch_feed" .WithVars (dict "feed_id" (.Params.ByName "feed_id")) }}
@@ -210,6 +210,6 @@
 {{- $result := .Exec `INSERT INTO ingest(feed_id, data) VALUES ($1, $2)` $feed_id (toJson $response.Value) }}
 {{- else }}
 Failed to fetch rss feed: {{$response.Error}}
-{{- call .RespStatus 502 }}
+{{- .Status 502 }}
 {{- end}}
 {{- end}}

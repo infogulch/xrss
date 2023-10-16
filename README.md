@@ -65,5 +65,5 @@ https://github.com/infogulch/xrss/commits/master.atom
 * https://tailwindcss.com/docs/
 * https://www.hyperui.dev/
 * Responsive layout demo: https://play.tailwindcss.com/KJTJ5n574r
-
+* https://github.com/argyleink/open-props/
 * https://yqnn.github.io/svg-path-editor/

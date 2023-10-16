@@ -3,12 +3,6 @@
 }
 
 :8080 {
-	route /assets/* {
-		file_server {
-			root context/
-		}
-	}
-
 	route {
 		xtemplate {
 			funcs_modules xrss

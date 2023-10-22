@@ -26,11 +26,11 @@ Future
 ## Developing
 
 ```
-# build with xcaddy:
-GOFLAGS='-tags="sqlite_json"' CGO_ENABLED=1 xcaddy build --with github.com/infogulch/xtemplate/caddy --with github.com/greenpau/caddy-security --with github.com/infogulch/xrss
+# build:
+GOFLAGS='-tags="sqlite_json"' CGO_ENABLED=1 go build -o xtemplate
 
-# build for local development using xtemplate checked out next to xrss
-GOFLAGS='-tags="sqlite_json"' CGO_ENABLED=1 XCADDY_DEBUG=1 xcaddy build --with github.com/infogulch/xtemplate/caddy=../xtemplate/caddy  --with github.com/infogulch/xtemplate=../xtemplate --with github.com/infogulch/xrss=. --with github.com/greenpau/caddy-security
+# run:
+./xtemplate --context-root context --db-driver sqlite3 --db-connstr 'file:rss.sqlite?_journal=WAL&_synchronous=NORMAL&_foreign_keys=true&_vacuum=full' --funcs xrss
 
 tailwindcss -i static/main.css -o static/site.css --content './templates/**/*' -w
 ```

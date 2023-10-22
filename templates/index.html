@@ -20,7 +20,7 @@
 				me a { margin-left: auto; }
 			</style>
 			<button class="mobile" onclick="scrollElementIntoView('#feeds-panel')">&nbsp;⇌&nbsp;</button>
-			<h2>{{.QueryVal `SELECT COALESCE((SELECT title FROM v_feed WHERE id=$1), 'All Feeds')` $feed_id}}</h2>
+			<h2>{{.Tx.QueryVal `SELECT COALESCE((SELECT title FROM v_feed WHERE id=$1), 'All Feeds')` $feed_id}}</h2>
 			{{- if .Req.Header.Get "Remote-User"}}
 			{{- if ne $feed_id 0}}<button hx-post="/feeds/{{$feed_id}}/refresh" hx-target="#items-panel" hx-swap="outerHTML scroll:top">⟳</button>{{end}}
 			<div>{{.Req.Header.Get "Remote-User"}}</div>
@@ -58,8 +58,8 @@
 			{{- block "items" .}}
 			{{- $feed_id := int (.Params.ByName "feed_id") }}
 			{{- $offset := int (.Req.URL.Query.Get "offset") }}
-			{{- $count := .QueryVal `SELECT COUNT(*) FROM v_item WHERE feed_id=$1 OR $1=0` $feed_id}}
-			{{- range .QueryRows `SELECT feed_id, id, feed_title, title, link, description, image, author, published, 0 AS expanded FROM v_item WHERE feed_id=$1 OR $1=0 ORDER BY published DESC LIMIT 10 OFFSET $2` $feed_id $offset }}
+			{{- $count := .Tx.QueryVal `SELECT COUNT(*) FROM v_item WHERE feed_id=$1 OR $1=0` $feed_id}}
+			{{- range .Tx.QueryRows `SELECT feed_id, id, feed_title, title, link, description, image, author, published, 0 AS expanded FROM v_item WHERE feed_id=$1 OR $1=0 ORDER BY published DESC LIMIT 10 OFFSET $2` $feed_id $offset }}
 			{{- block "item" .}}
 			<li>
 				<div hx-get="/feeds/{{.feed_id}}/items/{{.id}}/{{if not .expanded}}expanded{{end}}" hx-swap="outerHTML transition:true" hx-target="closest li">
@@ -117,7 +117,7 @@
 				me a span { margin-right: 0.25rem; border-radius: 0.125rem; width: 1.25rem; height: 1.25rem; font-family: Georgia, Cambria, "Times New Roman", Times, serif; font-weight: 700; text-align: center; background-color: #1F2937; }
 			</style>
 			<li><a href="/" hx-get="/" hx-target="body" hx-push-url="true" hx-swap="outerHTML show:#items-panel:top">All Feeds</a></li>
-			{{- range .QueryRows `SELECT id, url, title, image FROM v_feed`}}
+			{{- range .Tx.QueryRows `SELECT id, url, title, image FROM v_feed`}}
 			{{- block "feed" .}}
 			<li>
 				<a hx-get="/feeds/{{.id}}/" hx-target="#items-panel" hx-swap="outerHTML show:top" hx-push-url="true" href="/feed/{{.id}}/">
@@ -134,16 +134,10 @@
 				me input { width: 100%; }
 			</style>
 			{{- block "newfeed" .}}
-			{{- if not .Config 'read_only'}}
+			{{- if not (.Config `read_only`)}}
 			<input type="text" id="feedurl" name="feedurl" placeholder="Add a new feed" value="" required
 				hx-post="/feeds" hx-target="#feeds-list" hx-swap="beforeend" />
 			{{- end}}
-			{{- end}}
-			{{- block "perf" .}}
-			<div id="perf" hx-swap-oob="true" hx-swap="outerHTML" hx-target="#perf">
-				{{- $stats := .QueryStats -}}
-				Performed {{$stats.Count}} {{$stats.Count | plural "query" "queries"}} in {{$stats.TotalDuration.Round 10000}}.
-			</div>
 			{{- end}}
 		</footer>
 	</section>
@@ -152,7 +146,6 @@
 {{- define "GET /feeds/:feed_id/"}}
 {{- if (.Req.Header.Get "HX-Request")}}
 {{- template "items-panel" .}}
-{{- template "perf" .}}
 {{- else}}
 {{- template "/index.html" .}}
 {{- end}}
@@ -160,41 +153,37 @@
 
 {{- define "GET /items"}}
 {{- template "items" .}}
-{{- template "perf" .}}
 {{- end}}
 
 {{- define "GET /feeds/:feed_id/items"}}
 {{- template "items" .}}
-{{- template "perf" .}}
 {{- end}}
 
 {{- define "GET /feeds/:feed_id/items/:item_id/"}}
-{{- $item := .QueryRow `SELECT feed_id, id, feed_title, title, description, image, author, published, 0 AS expanded FROM v_item WHERE feed_id=$1 AND id=$2` (.Params.ByName "feed_id") (.Params.ByName "item_id") }}
+{{- $item := .Tx.QueryRow `SELECT feed_id, id, feed_title, title, description, image, author, published, 0 AS expanded FROM v_item WHERE feed_id=$1 AND id=$2` (.Params.ByName "feed_id") (.Params.ByName "item_id") }}
 {{- template "item" $item}}
-{{- template "perf" .}}
 {{- end}}
 
 {{- define "GET /feeds/:feed_id/items/:item_id/expanded"}}
 {{- $feed_id := .Params.ByName "feed_id" }}
 {{- $item_id := .Params.ByName "item_id" }}
-{{- $item := .QueryRow `SELECT feed_id, id, feed_title, title, link, image, author, published, categories, content, 1 AS expanded FROM v_item WHERE feed_id = $1 AND id = $2` $feed_id $item_id }}
+{{- $item := .Tx.QueryRow `SELECT feed_id, id, feed_title, title, link, image, author, published, categories, content, 1 AS expanded FROM v_item WHERE feed_id = $1 AND id = $2` $feed_id $item_id }}
 {{- template "item" $item}}
-{{- template "perf" .}}
 {{- end}}
 
 {{- define "POST /feeds"}}
-{{- if .Config 'read_only'}}
+{{- if .Config `read_only`}}
 {{- .Status 403 }}
 {{- return }}
 {{- end}}
 {{- $url := .Req.PostForm.feedurl | idx 0}}
-{{- $feed_id := (.Exec `INSERT INTO feed(url) VALUES(($1))` $url).LastInsertId }}
+{{- $feed_id := (.Tx.Exec `INSERT INTO feed(url) VALUES(($1))` $url).LastInsertId }}
 {{- template "fetch_feed" .WithVars (dict "feed_id" $feed_id) }}
 {{- template "feed" .QueryRow `SELECT id, url, title FROM v_feed WHERE id=?` $feed_id}}
 {{- end}}
 
 {{- define "POST /feeds/:feed_id/refresh"}}
-{{- if .Config 'read_only'}}
+{{- if .Config `read_only`}}
 {{- .Status 403 }}
 {{- return }}
 {{- end}}
@@ -204,10 +193,10 @@
 
 {{- define "fetch_feed"}}
 {{- $feed_id := .Vars.feed_id }}
-{{- $feed := .QueryRow `SELECT feed_id, url, last_modified, etag FROM v_feed_fetch_info WHERE feed_id=$1` $feed_id}}
+{{- $feed := .Tx.QueryRow `SELECT feed_id, url, last_modified, etag FROM v_feed_fetch_info WHERE feed_id=$1` $feed_id}}
 {{- $response :=  try .Funcs.fetchFeed $feed.url $feed.etag $feed.last_modified}}
 {{- if $response.OK }}
-{{- $result := .Exec `INSERT INTO ingest(feed_id, data) VALUES ($1, $2)` $feed_id (toJson $response.Value) }}
+{{- $result := .Tx.Exec `INSERT INTO ingest(feed_id, data) VALUES ($1, $2)` $feed_id (toJson $response.Value) }}
 {{- else }}
 Failed to fetch rss feed: {{$response.Error}}
 {{- .Status 502 }}

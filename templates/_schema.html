@@ -1,4 +1,4 @@
 {{define "INIT configure-schema"}}
-{{$user_version := .QueryVal "PRAGMA user_version"}}
-{{ .Exec (.ReadFile "schema.sql") }}
+{{$user_version := .Tx.QueryVal "PRAGMA user_version"}}
+{{ .Tx.Exec (.ReadFile "schema.sql") }}
 {{end}}

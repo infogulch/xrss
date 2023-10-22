@@ -7,3 +7,5 @@ node_modules
 users.json
 Caddyfile2
 go.work*
+xrss
+xtemplate

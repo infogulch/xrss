@@ -1,12 +1,14 @@
 package main
 
 import (
+	"text/template"
+
 	"github.com/infogulch/xtemplate"
 
-	_ "github.com/infogulch/xtemplate-gofeed"
 	_ "github.com/mattn/go-sqlite3"
 )
 
 func main() {
-	xtemplate.Main()
+	funcmap := template.FuncMap{"fetchFeed": FetchFeed}
+	xtemplate.Main(xtemplate.New().WithFuncMaps(funcmap))
 }

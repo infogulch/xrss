@@ -7,7 +7,7 @@
 	</style>
 
 	{{- block "items-panel" .}}
-	{{- $feed_id := int (.Params.ByName "feed_id") }}
+	{{- $feed_id := int (.Req.PathValue "feed_id") }}
 	<section id="items-panel">
 		<style>
 			me { flex-shrink: 0; width: 100%; min-width: 0; height: 100%; scroll-snap-align: start; scrollbar-gutter: stable; @media md { flex: 1 1 0%; } }
@@ -56,7 +56,7 @@
 				me .tip:hover span { visibility:visible; }
 			</style>
 			{{- block "items" .}}
-			{{- $feed_id := int (.Params.ByName "feed_id") }}
+			{{- $feed_id := int (.Req.PathValue "feed_id") }}
 			{{- $offset := int (.Req.URL.Query.Get "offset") }}
 			{{- $count := .Tx.QueryVal `SELECT COUNT(*) FROM v_item WHERE feed_id=$1 OR $1=0` $feed_id}}
 			{{- range .Tx.QueryRows `SELECT feed_id, id, feed_title, title, link, description, image, author, published, 0 AS expanded FROM v_item WHERE feed_id=$1 OR $1=0 ORDER BY published DESC LIMIT 10 OFFSET $2` $feed_id $offset }}
@@ -143,7 +143,7 @@
 	</section>
 </main>
 
-{{- define "GET /feeds/:feed_id/"}}
+{{- define "GET /feeds/{feed_id}/"}}
 {{- if (.Req.Header.Get "HX-Request")}}
 {{- template "items-panel" .}}
 {{- else}}
@@ -155,18 +155,18 @@
 {{- template "items" .}}
 {{- end}}
 
-{{- define "GET /feeds/:feed_id/items"}}
+{{- define "GET /feeds/{feed_id}/items"}}
 {{- template "items" .}}
 {{- end}}
 
-{{- define "GET /feeds/:feed_id/items/:item_id/"}}
-{{- $item := .Tx.QueryRow `SELECT feed_id, id, feed_title, title, description, image, author, published, 0 AS expanded FROM v_item WHERE feed_id=$1 AND id=$2` (.Params.ByName "feed_id") (.Params.ByName "item_id") }}
+{{- define "GET /feeds/{feed_id}/items/{item_id}/"}}
+{{- $item := .Tx.QueryRow `SELECT feed_id, id, feed_title, title, description, image, author, published, 0 AS expanded FROM v_item WHERE feed_id=$1 AND id=$2` (.Req.PathValue "feed_id") (.Req.PathValue "item_id") }}
 {{- template "item" $item}}
 {{- end}}
 
-{{- define "GET /feeds/:feed_id/items/:item_id/expanded"}}
-{{- $feed_id := .Params.ByName "feed_id" }}
-{{- $item_id := .Params.ByName "item_id" }}
+{{- define "GET /feeds/{feed_id}/items/{item_id}/expanded"}}
+{{- $feed_id := .Req.PathValue "feed_id" }}
+{{- $item_id := .Req.PathValue "item_id" }}
 {{- $item := .Tx.QueryRow `SELECT feed_id, id, feed_title, title, link, image, author, published, categories, content, 1 AS expanded FROM v_item WHERE feed_id = $1 AND id = $2` $feed_id $item_id }}
 {{- template "item" $item}}
 {{- end}}
@@ -182,13 +182,13 @@
 {{- template "feed" .QueryRow `SELECT id, url, title FROM v_feed WHERE id=?` $feed_id}}
 {{- end}}
 
-{{- define "POST /feeds/:feed_id/refresh"}}
+{{- define "POST /feeds/{feed_id}/refresh"}}
 {{- if .Config `read_only`}}
 {{- .Status 403 }}
 {{- return }}
 {{- end}}
-{{- template "fetch_feed" .WithVars (dict "feed_id" (.Params.ByName "feed_id")) }}
-{{- template "GET /feeds/:feed_id/" .}}
+{{- template "fetch_feed" .WithVars (dict "feed_id" (.Req.PathValue "feed_id")) }}
+{{- template "GET /feeds/{feed_id}/" .}}
 {{- end}}
 
 {{- define "fetch_feed"}}

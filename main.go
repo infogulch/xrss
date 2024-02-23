@@ -1,7 +1,7 @@
 package main
 
 import (
-	"text/template"
+	"html/template"
 
 	"github.com/infogulch/xtemplate"
 
@@ -10,5 +10,5 @@ import (
 
 func main() {
 	funcmap := template.FuncMap{"fetchFeed": FetchFeed}
-	xtemplate.Main(xtemplate.New().WithFuncMaps(funcmap))
+	xtemplate.Main(xtemplate.WithFuncMaps(funcmap))
 }

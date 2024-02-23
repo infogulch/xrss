@@ -25,12 +25,12 @@ Future
 
 ## Developing
 
-```
+```shell
 # build:
-GOFLAGS='-tags="sqlite_json"' CGO_ENABLED=1 go build -o xtemplate
+GOFLAGS='-tags="sqlite_json"' CGO_ENABLED=1 go build -o xrss
 
 # run:
-./xtemplate --context-root context --db-driver sqlite3 --db-connstr 'file:rss.sqlite?_journal=WAL&_synchronous=NORMAL&_foreign_keys=true&_vacuum=full' --funcs xrss
+./xrss --context-path context --db-driver sqlite3 --db-connstr 'file:rss.sqlite?_journal=WAL&_synchronous=NORMAL&_foreign_keys=true&_vacuum=full'
 
 tailwindcss -i static/main.css -o static/site.css --content './templates/**/*' -w
 ```

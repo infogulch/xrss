@@ -1,10 +1,59 @@
-{{template "/_head.html"}}
+{{template "/.head.html"}}
 <title>Home</title>
 
 <main>
 	<style>
-		me { display: flex; flex-direction: row-reverse; overflow-x: scroll; background-color: #ffffff; scroll-snap-type: x mandatory; width: 100vw; height: 100vh; scrollbar-width: none; }
+		me { display: flex; flex-direction: row; overflow-x: scroll; background-color: #ffffff; scroll-snap-type: x mandatory; width: 100vw; height: 100vh; scrollbar-width: none; }
 	</style>
+
+	<section id="feeds-panel">
+		<style>
+			me { display: flex; overflow-y: auto; padding: 0.5rem; flex-direction: column; flex-shrink: 0; width: 100%; height: 100%; scroll-snap-align: start; scrollbar-gutter: stable; }
+			me { @media (min-width: 768px) { width: 16rem; } }
+		</style>
+		<header>
+			<style>
+				me { display: flex; margin-bottom: 1.5rem; }
+				me span { padding: 0.75rem; border-radius: 0.5rem; font-size: 1.125rem; line-height: 1.75rem; text-align: center; color: #4B5563; background-color: #F3F4F6; }
+				me button { right: 0; padding: 0.75rem; margin-left: auto; border-radius: 0.5rem; height: 100%; font-size: 1.125rem; line-height: 1.75rem; color: #4B5563; background-color: #F3F4F6; }
+				me button { @media (min-width: 768px) { display: none; } }
+			</style>
+			<span>XRss</span>
+			<button onclick="scrollElementIntoView('#items-panel')">&nbsp;⇌&nbsp;</button>
+		</header>
+		<ol id="feeds-list">
+			<style>
+				me li { overflow: hidden; }
+				me li+li { margin-top: 0.25rem; }
+				me a { display: flex; padding: 0.5rem 1rem; border-radius: 0.5rem; font-size: 0.875rem; line-height: 1.25rem; font-weight: 500; color: #374151; background-color: #F3F4F6; }
+				me a img { margin-right: 0.25rem; width: 1.25rem; height: 1.25rem; }
+				me a span { margin-right: 0.25rem; border-radius: 0.125rem; width: 1.25rem; height: 1.25rem; font-family: Georgia, Cambria, "Times New Roman", Times, serif; font-weight: 700; text-align: center; background-color: #1F2937; }
+			</style>
+			<li><a href="/" hx-get="/" hx-target="body" hx-push-url="true" hx-swap="outerHTML show:#items-panel:top">All Feeds</a></li>
+			{{- range .Tx.QueryRows `SELECT id, url, title, image FROM v_feed`}}
+			{{- block "feed" .}}
+			<li>
+				<a hx-get="/feeds/{{.id}}/" hx-target="#items-panel" hx-swap="outerHTML show:top" hx-push-url="true" href="/feed/{{.id}}/">
+					{{- if .image}}<img src="{{.image}}">{{- else}}<span>{{.title | substr 0 1 | upper}}</span>{{end}}
+					{{- .title -}}
+				</a>
+			</li>
+			{{- end}}
+			{{- end}}
+		</ol>
+		<footer>
+			<style>
+				me { right: 0; left: 0; bottom: 0; margin-top: auto; }
+				me input { width: 100%; }
+			</style>
+			{{- block "newfeed" .}}
+			{{- if not (.Config `read_only`)}}
+			<input type="text" id="feedurl" name="feedurl" placeholder="Add a new feed" value="" required
+				hx-post="/feeds" hx-target="#feeds-list" hx-swap="beforeend" />
+			{{- end}}
+			{{- end}}
+		</footer>
+	</section>
 
 	{{- block "items-panel" .}}
 	{{- $feed_id := int (.Req.PathValue "feed_id") }}
@@ -91,56 +140,6 @@
 		</ol>
 	</section>
 	{{- end}}
-
-	<!-- render feeds panel last + main flex-direction: row-reverse so #perf renders after all queries. yes that's kinda quirky. -->
-	<section id="feeds-panel">
-		<style>
-			me { display: flex; overflow-y: auto; padding: 0.5rem; flex-direction: column; flex-shrink: 0; width: 100%; height: 100%; scroll-snap-align: start; scrollbar-gutter: stable; }
-			me { @media (min-width: 768px) { width: 16rem; } }
-		</style>
-		<header>
-			<style>
-				me { display: flex; margin-bottom: 1.5rem; }
-				me span { padding: 0.75rem; border-radius: 0.5rem; font-size: 1.125rem; line-height: 1.75rem; text-align: center; color: #4B5563; background-color: #F3F4F6; }
-				me button { right: 0; padding: 0.75rem; margin-left: auto; border-radius: 0.5rem; height: 100%; font-size: 1.125rem; line-height: 1.75rem; color: #4B5563; background-color: #F3F4F6; }
-				me button { @media (min-width: 768px) { display: none; } }
-			</style>
-			<span>XRss</span>
-			<button onclick="scrollElementIntoView('#items-panel')">&nbsp;⇌&nbsp;</button>
-		</header>
-		<ol id="feeds-list">
-			<style>
-				me li { overflow: hidden; }
-				me li+li { margin-top: 0.25rem; }
-				me a { display: flex; padding: 0.5rem 1rem; border-radius: 0.5rem; font-size: 0.875rem; line-height: 1.25rem; font-weight: 500; color: #374151; background-color: #F3F4F6; }
-				me a img { margin-right: 0.25rem; width: 1.25rem; height: 1.25rem; }
-				me a span { margin-right: 0.25rem; border-radius: 0.125rem; width: 1.25rem; height: 1.25rem; font-family: Georgia, Cambria, "Times New Roman", Times, serif; font-weight: 700; text-align: center; background-color: #1F2937; }
-			</style>
-			<li><a href="/" hx-get="/" hx-target="body" hx-push-url="true" hx-swap="outerHTML show:#items-panel:top">All Feeds</a></li>
-			{{- range .Tx.QueryRows `SELECT id, url, title, image FROM v_feed`}}
-			{{- block "feed" .}}
-			<li>
-				<a hx-get="/feeds/{{.id}}/" hx-target="#items-panel" hx-swap="outerHTML show:top" hx-push-url="true" href="/feed/{{.id}}/">
-					{{- if .image}}<img src="{{.image}}">{{- else}}<span>{{.title | substr 0 1 | upper}}</span>{{end}}
-					{{- .title -}}
-				</a>
-			</li>
-			{{- end}}
-			{{- end}}
-		</ol>
-		<footer>
-			<style>
-				me { right: 0; left: 0; bottom: 0; margin-top: auto; }
-				me input { width: 100%; }
-			</style>
-			{{- block "newfeed" .}}
-			{{- if not (.Config `read_only`)}}
-			<input type="text" id="feedurl" name="feedurl" placeholder="Add a new feed" value="" required
-				hx-post="/feeds" hx-target="#feeds-list" hx-swap="beforeend" />
-			{{- end}}
-			{{- end}}
-		</footer>
-	</section>
 </main>
 
 {{- define "GET /feeds/{feed_id}/"}}
